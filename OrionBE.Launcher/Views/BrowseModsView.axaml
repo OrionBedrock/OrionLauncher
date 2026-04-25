@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrionBE.Launcher.ViewModels"
+             xmlns:models="using:OrionBE.Launcher.Models"
+             x:Class="OrionBE.Launcher.Views.BrowseModsView"
+             x:DataType="vm:BrowseModsViewModel">
+    <Grid Margin="24" RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0"
+                   Text="Browse mods"
+                   FontSize="26"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,16"/>
+
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Mods}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:ModCatalogItem">
+                        <Border Margin="0,0,0,12"
+                                Padding="14"
+                                CornerRadius="12"
+                                Background="{DynamicResource OreSurfaceBrush}">
+                            <Grid ColumnDefinitions="56,*,Auto" ColumnSpacing="12">
+                                <Border Grid.Column="0"
+                                        Width="48"
+                                        Height="48"
+                                        CornerRadius="10"
+                                        ClipToBounds="True"
+                                        Background="#22000000">
+                                    <Image Width="48"
+                                           Height="48"
+                                           Stretch="UniformToFill"
+                                           Source="{Binding IconResource}"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding ShortDescription}"
+                                               Foreground="{DynamicResource OreMutedBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <Button Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Content="Details"
+                                        Tag="{Binding}"
+                                        Click="Details_Click"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,22 @@
+# Build outputs
+**/bin/
+**/obj/
+/packages/
+/artifacts/publish/
+/artifacts/AppDir/
+/artifacts/appimage/
+
+# IDE / editor
+/.idea/
+/.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.iml
+/_ReSharper.Caches/
+requisitos.txt
+
+# OS
+.DS_Store
+Thumbs.db

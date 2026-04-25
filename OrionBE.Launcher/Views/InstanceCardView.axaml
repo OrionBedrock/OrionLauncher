@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrionBE.Launcher.ViewModels"
+             x:Class="OrionBE.Launcher.Views.InstanceCardView"
+             x:DataType="vm:InstanceCardViewModel">
+    <Border Width="240"
+            Height="200"
+            CornerRadius="12"
+            Background="{DynamicResource OreSurfaceBrush}"
+            Padding="12">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <TextBlock Text="{Binding DisplayName}"
+                       FontWeight="SemiBold"
+                       TextTrimming="CharacterEllipsis"/>
+
+            <StackPanel Grid.Row="1"
+                        Spacing="6"
+                        VerticalAlignment="Top"
+                        Margin="0,8,0,0">
+                <TextBlock Foreground="{DynamicResource OreMutedBrush}" Text="{Binding GameVersion}"/>
+                <TextBlock Foreground="{DynamicResource OreAccentBrush}" Text="{Binding ModeLabel}"/>
+            </StackPanel>
+
+            <DockPanel Grid.Row="2" LastChildFill="True">
+                <Button DockPanel.Dock="Right"
+                        Command="{Binding OpenSettingsCommand}"
+                        Padding="8"
+                        Background="#22000000"
+                        ToolTip.Tip="Settings">
+                    <Image Width="18"
+                           Height="18"
+                           Source="/Assets/Icons/settings_instance.ico"/>
+                </Button>
+
+                <Button Command="{Binding PlayCommand}"
+                        HorizontalAlignment="Stretch"
+                        Padding="10,8"
+                        Background="{DynamicResource OreAccentBrush}"
+                        Foreground="#FF0B120E">
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                        <Image Width="16" Height="16" Source="/Assets/Icons/play_instance.ico"/>
+                        <TextBlock Text="Play" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </DockPanel>
+        </Grid>
+    </Border>
+</UserControl>

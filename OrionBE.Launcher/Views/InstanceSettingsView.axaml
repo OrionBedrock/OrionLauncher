@@ -1,0 +1,138 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrionBE.Launcher.ViewModels"
+             x:Class="OrionBE.Launcher.Views.InstanceSettingsView"
+             x:DataType="vm:InstanceSettingsViewModel">
+    <Grid Margin="24" RowDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Row="0"
+                   Text="Definições da instância"
+                   FontSize="26"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,16"/>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="16" MaxWidth="900">
+                <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Resumo" FontWeight="SemiBold"/>
+                        <TextBlock>
+                            <Run Text="Nome:"/>
+                            <Run Text="{Binding DisplayName}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="Versão:"/>
+                            <Run Text="{Binding GameVersion}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="Mods ativos:"/>
+                            <Run Text="{Binding ModsEnabled}"/>
+                        </TextBlock>
+                        <TextBlock Text="Pasta da instância" Foreground="{DynamicResource OreMutedBrush}" Margin="0,8,0,0"/>
+                        <DockPanel LastChildFill="True">
+                            <Button DockPanel.Dock="Right"
+                                    Content="Abrir"
+                                    MinWidth="88"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Top"
+                                    Command="{Binding OpenInExplorerCommand}"
+                                    CommandParameter="{Binding InstanceRootPath}"/>
+                            <TextBlock Text="{Binding InstanceRootPath}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border IsVisible="{Binding ShowLinuxGdkSection}"
+                        Background="{DynamicResource OreSurfaceBrush}"
+                        CornerRadius="12"
+                        Padding="14">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Linux GDK (estilo Amethyst)" FontWeight="SemiBold"/>
+                        <TextBlock Text="Caminhos definidos na instalação (raonygamer/umu-launcher, raonygamer/gdk-proton)."
+                                   Foreground="{DynamicResource OreMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="umu-run" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <DockPanel LastChildFill="True">
+                            <Button DockPanel.Dock="Right" Content="Abrir" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                                    Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding LinuxUmuRunPath}"/>
+                            <TextBlock Text="{Binding LinuxUmuRunPath, TargetNullValue='(não configurado)'}" TextWrapping="Wrap"/>
+                        </DockPanel>
+                        <TextBlock Text="GDK Proton (diretório PROTONPATH)" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <DockPanel LastChildFill="True">
+                            <Button DockPanel.Dock="Right" Content="Abrir" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                                    Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding LinuxProtonPath}"/>
+                            <TextBlock Text="{Binding LinuxProtonPath, TargetNullValue='(não configurado)'}" TextWrapping="Wrap"/>
+                        </DockPanel>
+                        <TextBlock Text="WINEPREFIX" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <DockPanel LastChildFill="True">
+                            <Button DockPanel.Dock="Right" Content="Abrir" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                                    Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding LinuxWinePrefixPath}"/>
+                            <TextBlock Text="{Binding LinuxWinePrefixPath, TargetNullValue='(não configurado)'}" TextWrapping="Wrap"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Jogo Bedrock" FontWeight="SemiBold"/>
+                        <TextBlock Text="Executável e identificador do pacote (após instalação)."
+                                   Foreground="{DynamicResource OreMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="Minecraft.Windows.exe" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <DockPanel LastChildFill="True">
+                            <Button DockPanel.Dock="Right" Content="Abrir" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                                    Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding BedrockWindowsExecutablePath}"/>
+                            <TextBlock Text="{Binding BedrockWindowsExecutablePath, TargetNullValue='(não instalado)'}" TextWrapping="Wrap"/>
+                        </DockPanel>
+                        <TextBlock>
+                            <Run Text="UUID do pacote: " Foreground="{DynamicResource OreMutedBrush}"/>
+                            <Run Text="{Binding BedrockVersionUuid}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Spacing="8" IsVisible="{Binding ModsEnabled}">
+                    <TextBlock Text="Mods instalados" FontWeight="SemiBold"/>
+                    <TextBlock Text="Ative ou desative. Os ficheiros mantêm-se em disco."
+                               Foreground="{DynamicResource OreMutedBrush}"
+                               TextWrapping="Wrap"/>
+
+                    <ItemsControl ItemsSource="{Binding ModRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:InstanceModRowViewModel">
+                                <Border Margin="0,0,0,10"
+                                        Padding="12"
+                                        CornerRadius="10"
+                                        Background="{DynamicResource OreSurfaceBrush}">
+                                    <DockPanel LastChildFill="False">
+                                        <ToggleSwitch DockPanel.Dock="Right"
+                                                      IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                      OnContent="Ativo"
+                                                      OffContent="Inativo"/>
+                                        <TextBlock Text="{Binding GlobalFolderName}"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,16,0,0">
+            <Button Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    Content="Voltar"
+                    MinWidth="120"
+                    Command="{Binding BackCommand}"/>
+            <Button Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    Content="Excluir instância"
+                    MinWidth="160"
+                    Foreground="#FFFFE8E8"
+                    Background="#88C42B2B"
+                    Command="{Binding DeleteInstanceCommand}"/>
+        </Grid>
+    </Grid>
+</UserControl>

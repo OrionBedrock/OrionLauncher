@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="using:System"
+             xmlns:vm="using:OrionBE.Launcher.ViewModels"
+             xmlns:models="using:OrionBE.Launcher.Models"
+             xmlns:conv="using:OrionBE.Launcher.Infrastructure.Converters"
+             x:Class="OrionBE.Launcher.Views.ModDetailsView"
+             x:DataType="vm:ModDetailsViewModel">
+    <UserControl.Resources>
+        <conv:PathToBitmapConverter x:Key="PathBitmap"/>
+    </UserControl.Resources>
+
+    <Grid Margin="24" RowDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Row="0"
+                   Text="{Binding HeaderTitle}"
+                   FontSize="26"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,16"/>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="14" MaxWidth="980">
+                <TextBlock Text="{Binding FullDescription}" TextWrapping="Wrap"/>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Version" Foreground="{DynamicResource OreMutedBrush}"/>
+                    <ComboBox ItemsSource="{Binding Versions}"
+                              SelectedItem="{Binding SelectedVersion}"
+                              MinHeight="36">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:ModVersion">
+                                <TextBlock>
+                                    <Run Text="{Binding Version}"/>
+                                    <Run Text="  (targets "/>
+                                    <Run Text="{Binding SupportedGameVersion}"/>
+                                    <Run Text=")"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Screenshots" FontWeight="SemiBold"/>
+                    <TextBlock Text="Optional images resolved from docs/prints when present next to the published build."
+                               Foreground="{DynamicResource OreMutedBrush}"
+                               TextWrapping="Wrap"/>
+
+                    <ItemsControl ItemsSource="{Binding ScreenshotPaths}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="10"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="sys:String">
+                                <Border Width="220"
+                                        Height="120"
+                                        CornerRadius="10"
+                                        ClipToBounds="True"
+                                        Background="#22000000">
+                                    <Image Stretch="UniformToFill"
+                                           Source="{Binding Path=., Converter={StaticResource PathBitmap}}"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,16,0,0">
+            <Button Content="Back" MinWidth="120" Command="{Binding BackCommand}"/>
+            <Button Content="Install"
+                    MinWidth="120"
+                    Command="{Binding InstallCommand}"
+                    Background="{DynamicResource OreAccentBrush}"
+                    Foreground="#FF0B120E"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

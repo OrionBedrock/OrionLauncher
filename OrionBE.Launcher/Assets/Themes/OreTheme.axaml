@@ -1,0 +1,24 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Styles.Resources>
+        <Color x:Key="OreBackgroundColor">#FF121814</Color>
+        <Color x:Key="OreSurfaceColor">#FF1B2620</Color>
+        <Color x:Key="OreAccentColor">#FF22C55E</Color>
+        <Color x:Key="OreMutedColor">#FFB6C4BC</Color>
+
+        <SolidColorBrush x:Key="OreBackgroundBrush" Color="{StaticResource OreBackgroundColor}"/>
+        <SolidColorBrush x:Key="OreSurfaceBrush" Color="{StaticResource OreSurfaceColor}"/>
+        <SolidColorBrush x:Key="OreAccentBrush" Color="{StaticResource OreAccentColor}"/>
+        <SolidColorBrush x:Key="OreMutedBrush" Color="{StaticResource OreMutedColor}"/>
+    </Styles.Resources>
+
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource OreBackgroundBrush}"/>
+    </Style>
+
+    <Style Selector="Button.nav">
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+</Styles>

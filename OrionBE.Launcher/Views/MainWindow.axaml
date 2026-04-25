@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:OrionBE.Launcher.ViewModels"
+        xmlns:local="using:OrionBE.Launcher"
+        mc:Ignorable="d"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        d:DesignWidth="1200"
+        d:DesignHeight="720"
+        x:Class="OrionBE.Launcher.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="OrionBE Launcher"
+        MinWidth="1080"
+        MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource OreBackgroundBrush}">
+
+    <DockPanel>
+        <Border DockPanel.Dock="Left"
+                Width="84"
+                Background="{DynamicResource OreSurfaceBrush}">
+            <StackPanel Margin="12" Spacing="10">
+                <Grid Height="56">
+                    <Border CornerRadius="10"
+                            Margin="4"
+                            IsVisible="{Binding IsMainSelected}"
+                            Background="#3322C55E"/>
+                    <Button Classes="nav"
+                            ToolTip.Tip="Main"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding GoMainCommand}">
+                        <Image Width="22"
+                               Height="22"
+                               Source="/Assets/Icons/nav_main.ico"/>
+                    </Button>
+                </Grid>
+
+                <Grid Height="56">
+                    <Border CornerRadius="10"
+                            Margin="4"
+                            IsVisible="{Binding IsBrowseModsSelected}"
+                            Background="#3322C55E"/>
+                    <Button Classes="nav"
+                            ToolTip.Tip="Browse mods"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding GoBrowseModsCommand}">
+                        <Image Width="22"
+                               Height="22"
+                               Source="/Assets/Icons/nav_browse_mods.ico"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <ContentControl Content="{Binding CurrentPage}">
+            <ContentControl.ContentTemplate>
+                <local:ViewLocator/>
+            </ContentControl.ContentTemplate>
+        </ContentControl>
+    </DockPanel>
+</Window>

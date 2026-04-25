@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrionBE.Launcher.ViewModels"
+             x:Class="OrionBE.Launcher.Views.AddInstanceView"
+             x:DataType="vm:AddInstanceViewModel">
+    <Grid Margin="24" RowDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Row="0"
+                   Text="Add instance"
+                   FontSize="26"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,16"/>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14" MaxWidth="720">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Instance name" Foreground="{DynamicResource OreMutedBrush}"/>
+                    <TextBox Text="{Binding InstanceName}" Watermark="My survival world"/>
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Game version" Foreground="{DynamicResource OreMutedBrush}"/>
+                    <ComboBox ItemsSource="{Binding GameVersions}"
+                              SelectedItem="{Binding SelectedGameVersion}"
+                              MinHeight="36"/>
+                </StackPanel>
+
+                <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="10" Padding="12">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Mode" FontWeight="SemiBold"/>
+                        <TextBlock Text="Vanilla is default. Enable mods to unlock the mod install pipeline for this instance."
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource OreMutedBrush}"/>
+                        <ToggleSwitch IsChecked="{Binding IsModsMode}"
+                                      OnContent="Mods"
+                                      OffContent="Vanilla"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Spacing="8" IsVisible="{Binding IsInstalling}">
+                    <TextBlock Text="{Binding InstallStatus}" Foreground="{DynamicResource OreMutedBrush}"/>
+                    <ProgressBar Minimum="0" Maximum="1" Value="{Binding InstallProgress}" Height="10"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,16,0,0">
+            <Button Content="Cancel" MinWidth="120" Command="{Binding CancelCommand}"/>
+            <Button Content="Create"
+                    MinWidth="120"
+                    Command="{Binding CreateCommand}"
+                    Background="{DynamicResource OreAccentBrush}"
+                    Foreground="#FF0B120E"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

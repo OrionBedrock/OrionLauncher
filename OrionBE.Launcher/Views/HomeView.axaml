@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrionBE.Launcher.ViewModels"
+             xmlns:views="using:OrionBE.Launcher.Views"
+             x:Class="OrionBE.Launcher.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+    <Grid RowDefinitions="Auto,*" Margin="24">
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+            <TextBlock DockPanel.Dock="Left"
+                       Text="Instances"
+                       FontSize="26"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"/>
+            <Button DockPanel.Dock="Right"
+                    Content="Add instance"
+                    Command="{Binding AddInstanceCommand}"
+                    Padding="16,10"
+                    Background="{DynamicResource OreAccentBrush}"
+                    Foreground="#FF0B120E"/>
+        </DockPanel>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Instances}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:InstanceCardViewModel">
+                        <views:InstanceCardView Margin="0,0,16,16" DataContext="{Binding}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
