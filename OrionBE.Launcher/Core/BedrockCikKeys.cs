@@ -1,12 +1,12 @@
 namespace OrionBE.Launcher.Core;
 
 /// <summary>
-/// Content integrity keys mirrored from Amethyst Launcher
-/// <see href="https://github.com/FrederoxDev/Amethyst-Launcher/blob/main/src/renderer/src/scripts/backend/Decryption.ts">Decryption.ts</see>.
+/// Content integrity keys sourced from
+/// <see href="https://github.com/FrederoxDev/Amethyst-Launcher/blob/main/src/renderer/src/scripts/backend/Decryption.ts">FrederoxDev/Amethyst-Launcher Decryption.ts</see>.
 /// </summary>
 public static class BedrockCikKeys
 {
-    /// <summary>CIK UUID → hex-encoded CIK data (same map as Amethyst).</summary>
+    /// <summary>CIK UUID → hex-encoded CIK data.</summary>
     public static IReadOnlyDictionary<string, string> UuidToHex { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         ["bdb9e791-c97c-3734-e1a8-bc602552df06"] =

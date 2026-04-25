@@ -1,2 +1,0 @@
-/home/perfect/Documentos/Projects/OrionBE/artifacts/publish/linux-x64/OrionBE.Launcher.pdb
-/home/perfect/Documentos/Projects/OrionBE/artifacts/publish/linux-x64/OrionBE.Launcher

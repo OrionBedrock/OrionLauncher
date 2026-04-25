@@ -15,7 +15,7 @@ public static class OrionPaths
     public static string Cache => Path.Combine(Root, "cache");
     public static string Assets => Path.Combine(Root, "assets");
 
-    /// <summary>Cached Bedrock GDK version list (same upstream as Amethyst).</summary>
+    /// <summary>Cached Bedrock GDK version list from the upstream catalog.</summary>
     public static string BedrockVersionCacheFile => Path.Combine(Cache, "bedrock_versions_cache.json");
 
     /// <summary>Shared encrypted <c>.msixvc</c> downloads (one file per game version string).</summary>

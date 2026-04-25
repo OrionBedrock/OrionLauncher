@@ -7,8 +7,10 @@ using OrionBE.Launcher.Core;
 namespace OrionBE.Launcher.Services;
 
 /// <summary>
-/// Mirrors Amethyst Launcher's <c>LauncherTools.GDKProton</c> and <c>LauncherTools.UMULauncher</c>:
-/// fetch latest GitHub release assets, extract under <c>~/OrionBE/cache/tools/</c>, chmod 755 recursively, locate <c>umu-run</c> and GDK <c>proton</c>.
+/// Fetches latest GitHub release assets, extracts under <c>~/OrionBE/cache/tools/</c>,
+/// applies chmod 755 recursively, and resolves <c>umu-run</c> and GDK <c>proton</c>.
+/// Repositories: <see href="https://github.com/raonygamer/gdk-proton">raonygamer/gdk-proton</see>,
+/// <see href="https://github.com/raonygamer/umu-launcher">raonygamer/umu-launcher</see>.
 /// </summary>
 public sealed class GdkLinuxRuntimeService : IGdkLinuxRuntimeService
 {

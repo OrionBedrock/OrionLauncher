@@ -9,8 +9,7 @@ using OrionBE.Launcher.Models;
 namespace OrionBE.Launcher.Services;
 
 /// <summary>
-/// Remote list from <see href="https://github.com/LukasPAH/minecraft-windows-gdk-version-db">minecraft-windows-gdk-version-db</see>
-/// (same URL as Amethyst <c>VersionDatabase.DATABASE_URL</c>).
+/// Remote list from <see href="https://github.com/LukasPAH/minecraft-windows-gdk-version-db">minecraft-windows-gdk-version-db</see>.
 /// </summary>
 public sealed class BedrockVersionCatalogService : IBedrockVersionCatalogService
 {

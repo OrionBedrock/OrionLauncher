@@ -8,7 +8,7 @@ public sealed class InstanceConfig
     public bool ModsEnabled { get; set; }
     public List<InstalledModEntry> Mods { get; set; } = [];
 
-    /// <summary>Absolute path to <c>umu-run</c> (Amethyst-style UMU launcher on Linux).</summary>
+    /// <summary>Absolute path to <c>umu-run</c> on Linux.</summary>
     public string? LinuxUmuRunPath { get; set; }
 
     /// <summary>Directory used as <c>PROTONPATH</c> for GDK Proton (contains the <c>proton</c> script).</summary>

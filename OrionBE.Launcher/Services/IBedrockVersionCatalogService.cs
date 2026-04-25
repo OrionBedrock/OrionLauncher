@@ -4,7 +4,7 @@ namespace OrionBE.Launcher.Services;
 
 public interface IBedrockVersionCatalogService
 {
-    /// <summary>Fetches or returns cached catalog (30-minute TTL, same idea as Amethyst).</summary>
+    /// <summary>Fetches or returns cached catalog with 30-minute TTL.</summary>
     Task<IReadOnlyList<BedrockVersionEntry>> GetCatalogAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Resolves a dropdown label or normalized version string to an entry.</summary>

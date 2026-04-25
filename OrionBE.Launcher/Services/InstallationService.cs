@@ -93,7 +93,7 @@ public sealed class InstallationService : IInstallationService
 
         if (OperatingSystem.IsLinux() && _gdkLinuxRuntimeService.IsSupported)
         {
-            Report("A instalar GDK Proton + UMU (como no Amethyst)", 0.06);
+            Report("A instalar GDK Proton + UMU", 0.06);
             var gdk = await _gdkLinuxRuntimeService
                 .EnsureRuntimeAsync(progress, cancellationToken)
                 .ConfigureAwait(false);
@@ -115,7 +115,7 @@ public sealed class InstallationService : IInstallationService
             Report("A ignorar Proton/UMU (não Linux)", 0.1);
         }
 
-        Report("A obter XVDTool (AmethystAPI/xvdtool)", 0.14);
+        Report("A obter XVDTool (github.com/AmethystAPI/xvdtool)", 0.14);
         var xvdtool = await _xvdToolService.EnsureToolAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrEmpty(xvdtool))
         {
