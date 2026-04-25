@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=OrionBE Launcher
-Comment=Launcher desktop do OrionBE
-Exec=OrionBE.Launcher
-Icon=orionbe-launcher
-Terminal=false
-Categories=Utility;
