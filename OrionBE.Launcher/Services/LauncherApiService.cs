@@ -23,13 +23,23 @@ public sealed class LauncherApiService : IApiService
                 {
                     Version = "1.0.0",
                     SupportedGameVersion = "1.21.50",
+                    SupportedGameVersions = ["1.21.50", "1.21.40"],
                     DownloadUrl = "https://example.invalid/ore-hud-1.0.0.zip",
+                    RequiresLeviLamina = true,
+                    ApiName = "LeviLamina",
+                    LeviLaminaVersionRange = ">=1.0.0,<2.0.0",
+                    ApiVersionRange = ">=1.0.0,<2.0.0",
                 },
                 new ModVersion
                 {
                     Version = "0.9.2",
                     SupportedGameVersion = "1.20.80",
+                    SupportedGameVersions = ["1.20.80"],
                     DownloadUrl = "https://example.invalid/ore-hud-0.9.2.zip",
+                    RequiresLeviLamina = true,
+                    ApiName = "LeviLamina",
+                    LeviLaminaVersionRange = ">=0.9.0,<1.0.0",
+                    ApiVersionRange = ">=0.9.0,<1.0.0",
                 },
             ],
         },
@@ -47,7 +57,9 @@ public sealed class LauncherApiService : IApiService
                 {
                     Version = "2.1.0",
                     SupportedGameVersion = "1.21.40",
+                    SupportedGameVersions = ["1.21.40"],
                     DownloadUrl = "https://example.invalid/bedrock-patches-2.1.0.zip",
+                    RequiresLeviLamina = false,
                 },
             ],
         },

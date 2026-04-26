@@ -36,6 +36,33 @@
                     </StackPanel>
                 </Border>
 
+                <Border Background="{DynamicResource OreSurfaceBrush}"
+                        CornerRadius="10"
+                        Padding="12"
+                        IsVisible="{Binding ShowLeviLaminaOption}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="LeviLamina Loader" FontWeight="SemiBold"/>
+                        <TextBlock Text="This game version is compatible with LeviLamina. You can create the instance with or without the loader."
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource OreMutedBrush}"/>
+                        <ToggleSwitch IsChecked="{Binding InstallWithLeviLamina}"
+                                      OnContent="With LeviLamina"
+                                      OffContent="Without LeviLamina"/>
+                        <ComboBox ItemsSource="{Binding LeviLaminaVersions}"
+                                  SelectedItem="{Binding SelectedLeviLaminaVersion}"
+                                  MinHeight="36"
+                                  IsEnabled="{Binding InstallWithLeviLamina}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{DynamicResource OreSurfaceBrush}"
+                        CornerRadius="10"
+                        Padding="12"
+                        IsVisible="{Binding IsModsMode}">
+                    <TextBlock Text="{Binding LeviSupportStatusText}"
+                               Foreground="{DynamicResource OreMutedBrush}"/>
+                </Border>
+
                 <StackPanel Spacing="8" IsVisible="{Binding IsInstalling}">
                     <TextBlock Text="{Binding InstallStatus}" Foreground="{DynamicResource OreMutedBrush}"/>
                     <ProgressBar Minimum="0" Maximum="1" Value="{Binding InstallProgress}" Height="10"/>

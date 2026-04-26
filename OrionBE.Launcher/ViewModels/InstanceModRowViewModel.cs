@@ -17,7 +17,28 @@ public sealed partial class InstanceModRowViewModel : ViewModelBase
         _suppressPersistence = false;
     }
 
+    public InstanceModRowViewModel(
+        InstanceSettingsViewModel owner,
+        InstalledModEntry entry,
+        ModConfig? config,
+        ModCompatibilityReport compatibility)
+        : this(owner, entry)
+    {
+        DisplayName = string.IsNullOrWhiteSpace(config?.Name) ? entry.GlobalFolderName : config.Name;
+        Version = config?.Version ?? "unknown";
+        RequiresLeviLamina = compatibility.RequiresLeviLamina;
+        CompatibilitySummary = compatibility.Summary;
+        IsCompatible = compatibility.GameVersionCompatible
+                       && compatibility.LeviLaminaCompatible
+                       && compatibility.ApiCompatible;
+    }
+
     public string GlobalFolderName { get; }
+    public string DisplayName { get; } = string.Empty;
+    public string Version { get; } = "unknown";
+    public bool RequiresLeviLamina { get; }
+    public bool IsCompatible { get; } = true;
+    public string CompatibilitySummary { get; } = "Compatible";
 
     [ObservableProperty]
     private bool _isEnabled;

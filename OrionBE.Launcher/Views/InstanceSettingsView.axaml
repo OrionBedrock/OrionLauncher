@@ -90,6 +90,40 @@
                     </StackPanel>
                 </Border>
 
+                <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14" IsVisible="{Binding ModsEnabled}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="LeviLamina" FontWeight="SemiBold"/>
+                        <TextBlock Text="Versão instalada nesta instância (usada para validar compatibilidade de mods)."
+                                   Foreground="{DynamicResource OreMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <DockPanel LastChildFill="True">
+                            <Button DockPanel.Dock="Right"
+                                    Content="Salvar"
+                                    MinWidth="90"
+                                    Margin="12,0,0,0"
+                                    Command="{Binding SaveLeviLaminaVersionCommand}"/>
+                            <TextBox Text="{Binding LeviLaminaVersion}"
+                                     Watermark="ex.: 1.1.0"
+                                     MinHeight="34"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14" IsVisible="{Binding ModsEnabled}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Importar mods locais" FontWeight="SemiBold"/>
+                        <TextBlock Text="Importe um .zip ou .dll local. A busca online de mods será implementada depois."
+                                   Foreground="{DynamicResource OreMutedBrush}"
+                                   TextWrapping="Wrap"/>
+                        <TextBox Text="{Binding ImportPath}" Watermark="/caminho/para/mod.zip ou .dll" MinHeight="34"/>
+                        <TextBox Text="{Binding ImportDisplayName}" Watermark="Nome opcional para exibição" MinHeight="34"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button Content="Importar ZIP" Command="{Binding ImportZipCommand}" MinWidth="120"/>
+                            <Button Content="Importar DLL" Command="{Binding ImportDllCommand}" MinWidth="120"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
                 <StackPanel Spacing="8" IsVisible="{Binding ModsEnabled}">
                     <TextBlock Text="Mods instalados" FontWeight="SemiBold"/>
                     <TextBlock Text="Ative ou desative. Os ficheiros mantêm-se em disco."
@@ -108,9 +142,16 @@
                                                       IsChecked="{Binding IsEnabled, Mode=TwoWay}"
                                                       OnContent="Ativo"
                                                       OffContent="Inativo"/>
-                                        <TextBlock Text="{Binding GlobalFolderName}"
-                                                   VerticalAlignment="Center"
-                                                   TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Version, StringFormat=v{0}}" Foreground="{DynamicResource OreMutedBrush}"/>
+                                            <TextBlock Text="{Binding GlobalFolderName}" Foreground="{DynamicResource OreMutedBrush}" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding CompatibilitySummary}"
+                                                       Foreground="{DynamicResource OreMutedBrush}"/>
+                                            <TextBlock Text="Requires LeviLamina"
+                                                       IsVisible="{Binding RequiresLeviLamina}"
+                                                       Foreground="{DynamicResource OreMutedBrush}"/>
+                                        </StackPanel>
                                     </DockPanel>
                                 </Border>
                             </DataTemplate>

@@ -14,22 +14,26 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     private readonly IInstallationService _installationService;
     private readonly INavigationService _navigationService;
     private readonly IAppEventBus _eventBus;
+    private readonly ILeviLaminaCompatibilityService _leviLaminaCompatibilityService;
     private readonly IDisposable _progressSubscription;
 
     public ObservableCollection<string> GameVersions { get; } = new();
+    public ObservableCollection<string> LeviLaminaVersions { get; } = new();
 
     public AddInstanceViewModel(
         IApiService apiService,
         IInstanceService instanceService,
         IInstallationService installationService,
         INavigationService navigationService,
-        IAppEventBus eventBus)
+        IAppEventBus eventBus,
+        ILeviLaminaCompatibilityService leviLaminaCompatibilityService)
     {
         _apiService = apiService;
         _instanceService = instanceService;
         _installationService = installationService;
         _navigationService = navigationService;
         _eventBus = eventBus;
+        _leviLaminaCompatibilityService = leviLaminaCompatibilityService;
         _progressSubscription = _eventBus.Subscribe<InstallationProgressChanged>(e =>
         {
             Dispatcher.UIThread.Post(() =>
@@ -52,6 +56,15 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     private bool _isModsMode;
 
     [ObservableProperty]
+    private bool _installWithLeviLamina;
+
+    [ObservableProperty]
+    private string? _selectedLeviLaminaVersion;
+
+    [ObservableProperty]
+    private bool _isSelectedVersionLeviCompatible;
+
+    [ObservableProperty]
     private bool _isInstalling;
 
     [ObservableProperty]
@@ -63,6 +76,16 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     partial void OnInstanceNameChanged(string value) => CreateCommand.NotifyCanExecuteChanged();
 
     partial void OnIsInstallingChanged(bool value) => CreateCommand.NotifyCanExecuteChanged();
+
+    partial void OnSelectedGameVersionChanged(string value) => _ = RefreshLeviCompatibilityAsync(value);
+
+    partial void OnIsModsModeChanged(bool value)
+    {
+        if (!value)
+        {
+            InstallWithLeviLamina = false;
+        }
+    }
 
     private async Task InitializeAsync()
     {
@@ -78,6 +101,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
             SelectedGameVersion = !string.IsNullOrEmpty(latest)
                 ? latest
                 : (GameVersions.Count > 0 ? GameVersions[0] : string.Empty);
+            await RefreshLeviCompatibilityAsync(SelectedGameVersion).ConfigureAwait(false);
         }
         catch
         {
@@ -116,7 +140,14 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
             });
 
             await _installationService
-                .InstallNewInstanceAsync(folder, InstanceName.Trim(), SelectedGameVersion, IsModsMode, progress)
+                .InstallNewInstanceAsync(
+                    folder,
+                    InstanceName.Trim(),
+                    SelectedGameVersion,
+                    IsModsMode,
+                    IsModsMode && InstallWithLeviLamina && IsSelectedVersionLeviCompatible,
+                    IsModsMode && InstallWithLeviLamina ? SelectedLeviLaminaVersion : null,
+                    progress)
                 .ConfigureAwait(false);
 
             _navigationService.GoBack();
@@ -124,6 +155,55 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         finally
         {
             IsInstalling = false;
+        }
+    }
+
+    public bool ShowLeviLaminaOption => IsModsMode && IsSelectedVersionLeviCompatible;
+    public string LeviSupportStatusText => IsSelectedVersionLeviCompatible
+        ? "LeviLamina support available for this game version."
+        : "LeviLamina not available for this game version.";
+
+    private async Task RefreshLeviCompatibilityAsync(string selectedGameVersion)
+    {
+        try
+        {
+            var versions = await _leviLaminaCompatibilityService
+                .GetSupportedVersionsAsync(selectedGameVersion)
+                .ConfigureAwait(false);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                LeviLaminaVersions.Clear();
+                foreach (var v in versions)
+                {
+                    LeviLaminaVersions.Add(v);
+                }
+
+                IsSelectedVersionLeviCompatible = LeviLaminaVersions.Count > 0;
+                if (!IsSelectedVersionLeviCompatible)
+                {
+                    InstallWithLeviLamina = false;
+                    SelectedLeviLaminaVersion = null;
+                }
+                else if (string.IsNullOrWhiteSpace(SelectedLeviLaminaVersion))
+                {
+                    SelectedLeviLaminaVersion = LeviLaminaVersions[0];
+                }
+
+                OnPropertyChanged(nameof(ShowLeviLaminaOption));
+                OnPropertyChanged(nameof(LeviSupportStatusText));
+            });
+        }
+        catch
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                LeviLaminaVersions.Clear();
+                IsSelectedVersionLeviCompatible = false;
+                InstallWithLeviLamina = false;
+                SelectedLeviLaminaVersion = null;
+                OnPropertyChanged(nameof(ShowLeviLaminaOption));
+                OnPropertyChanged(nameof(LeviSupportStatusText));
+            });
         }
     }
 

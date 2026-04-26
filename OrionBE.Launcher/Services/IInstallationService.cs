@@ -7,6 +7,8 @@ public interface IInstallationService
         string displayName,
         string gameVersion,
         bool modsEnabled,
+        bool installLeviLamina,
+        string? leviLaminaVersion,
         IProgress<(string Step, double Progress01)>? progress,
         CancellationToken cancellationToken = default);
 }

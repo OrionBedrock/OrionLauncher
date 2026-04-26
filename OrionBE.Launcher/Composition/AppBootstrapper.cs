@@ -36,10 +36,12 @@ public static class AppBootstrapper
         services.AddSingleton<IFileSystemService, FileSystemService>();
         services.AddSingleton<IAppEventBus, AppEventBus>();
         services.AddSingleton<IBedrockVersionCatalogService, BedrockVersionCatalogService>();
+        services.AddSingleton<ILeviLaminaCompatibilityService, LeviLaminaCompatibilityService>();
         services.AddSingleton<IApiService, LauncherApiService>();
         services.AddSingleton<IInstanceService, InstanceService>();
         services.AddSingleton<IModService, ModService>();
         services.AddSingleton<IDownloadService, DownloadService>();
+        services.AddSingleton<IVcRuntimeService, VcRuntimeService>();
         services.AddSingleton<IXvdToolService, XvdToolService>();
         services.AddSingleton<IGdkLinuxRuntimeService, GdkLinuxRuntimeService>();
         services.AddSingleton<IInstallationService, InstallationService>();

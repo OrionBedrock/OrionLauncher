@@ -32,7 +32,8 @@
                                     <Run Text="{Binding Version}"/>
                                     <Run Text="  (targets "/>
                                     <Run Text="{Binding SupportedGameVersion}"/>
-                                    <Run Text=")"/>
+                                    <Run Text=") "/>
+                                    <Run Text="{Binding LeviLaminaVersionRange, StringFormat='LL: {0}'}"/>
                                 </TextBlock>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>

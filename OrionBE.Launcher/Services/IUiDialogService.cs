@@ -11,5 +11,7 @@ public interface IUiDialogService
 
     Task<bool> ConfirmAsync(string title, string message);
 
+    Task<string?> PickOptionAsync(string title, string message, IReadOnlyList<string> options);
+
     Task<InstanceSummary?> PickModdedInstanceAsync(CancellationToken cancellationToken = default);
 }

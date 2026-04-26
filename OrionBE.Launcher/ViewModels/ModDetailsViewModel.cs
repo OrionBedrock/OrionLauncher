@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrionBE.Launcher.Core;
 using OrionBE.Launcher.Core.Events;
 using OrionBE.Launcher.Models;
 using OrionBE.Launcher.Services;
@@ -69,12 +70,15 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
             return;
         }
 
-        if (!string.Equals(target.Config.Version, SelectedVersion.SupportedGameVersion, StringComparison.OrdinalIgnoreCase))
+        var supportedVersions = SelectedVersion.SupportedGameVersions.Count > 0
+            ? SelectedVersion.SupportedGameVersions
+            : [SelectedVersion.SupportedGameVersion];
+        if (!supportedVersions.Any(v => string.Equals(v, target.Config.Version, StringComparison.OrdinalIgnoreCase)))
         {
             var proceed = await _uiDialogService
                 .ConfirmAsync(
                     "Version mismatch",
-                    $"The instance is on {target.Config.Version}, but this mod targets {SelectedVersion.SupportedGameVersion}. Continue anyway?")
+                    $"The instance is on {target.Config.Version}, but this mod targets {string.Join(", ", supportedVersions)}. Continue anyway?")
                 .ConfigureAwait(true);
 
             if (!proceed)
@@ -84,7 +88,33 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
 
             _eventBus.Publish(
                 new ModInstallWarning(
-                    $"Installed with version mismatch: instance {target.Config.Version}, mod {SelectedVersion.SupportedGameVersion}."));
+                    $"Installed with version mismatch: instance {target.Config.Version}, mod {string.Join(", ", supportedVersions)}."));
+        }
+
+        if (SelectedVersion.RequiresLeviLamina)
+        {
+            if (string.IsNullOrWhiteSpace(target.Config.LeviLaminaVersion))
+            {
+                await _uiDialogService
+                    .ShowMessageAsync(
+                        "LeviLamina required",
+                        "This mod requires LeviLamina, but the instance does not have a LeviLamina version configured in Instance Settings.")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            if (!VersionRangeMatcher.Matches(target.Config.LeviLaminaVersion, SelectedVersion.LeviLaminaVersionRange))
+            {
+                var proceed = await _uiDialogService
+                    .ConfirmAsync(
+                        "LeviLamina mismatch",
+                        $"Instance LeviLamina={target.Config.LeviLaminaVersion}, required range={SelectedVersion.LeviLaminaVersionRange}. Continue anyway?")
+                    .ConfigureAwait(true);
+                if (!proceed)
+                {
+                    return;
+                }
+            }
         }
 
         var globalFolder = await _modService.EnsureGlobalModFromCatalogAsync(Mod, SelectedVersion).ConfigureAwait(true);

@@ -5,11 +5,16 @@ namespace OrionBE.Launcher.Services;
 public sealed class GameLaunchService : IGameLaunchService
 {
     private readonly IInstanceService _instanceService;
+    private readonly IVcRuntimeService _vcRuntimeService;
     private readonly ILogger<GameLaunchService> _logger;
 
-    public GameLaunchService(IInstanceService instanceService, ILogger<GameLaunchService> logger)
+    public GameLaunchService(
+        IInstanceService instanceService,
+        IVcRuntimeService vcRuntimeService,
+        ILogger<GameLaunchService> logger)
     {
         _instanceService = instanceService;
+        _vcRuntimeService = vcRuntimeService;
         _logger = logger;
     }
 
@@ -33,6 +38,9 @@ public sealed class GameLaunchService : IGameLaunchService
         {
             throw new InvalidOperationException("Caminho do executável inválido.");
         }
+
+        await _vcRuntimeService.EnsureForGameAsync(OrionBE.Launcher.Core.OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
+            .ConfigureAwait(false);
 
         if (OperatingSystem.IsLinux())
         {

@@ -24,6 +24,7 @@ public sealed partial class InstanceCardViewModel : ViewModelBase
         DisplayName = summary.Config.Name;
         GameVersion = summary.Config.Version;
         IsModded = summary.Config.ModsEnabled;
+        LeviLaminaVersion = summary.Config.LeviLaminaVersion;
     }
 
     public string FolderName { get; }
@@ -33,8 +34,12 @@ public sealed partial class InstanceCardViewModel : ViewModelBase
     public string GameVersion { get; }
 
     public bool IsModded { get; }
+    public string? LeviLaminaVersion { get; }
 
     public string ModeLabel => IsModded ? "Modded" : "Vanilla";
+    public string RuntimeLabel => string.IsNullOrWhiteSpace(LeviLaminaVersion)
+        ? "Runtime: none"
+        : $"Runtime: LeviLamina {LeviLaminaVersion}";
 
     [RelayCommand]
     private async Task PlayAsync()

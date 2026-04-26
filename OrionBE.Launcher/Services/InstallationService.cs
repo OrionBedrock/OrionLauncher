@@ -16,6 +16,7 @@ public sealed class InstallationService : IInstallationService
     private readonly IGdkLinuxRuntimeService _gdkLinuxRuntimeService;
     private readonly IBedrockVersionCatalogService _bedrockCatalog;
     private readonly IXvdToolService _xvdToolService;
+    private readonly IVcRuntimeService _vcRuntimeService;
     private readonly ILogger<InstallationService> _logger;
 
     public InstallationService(
@@ -26,6 +27,7 @@ public sealed class InstallationService : IInstallationService
         IGdkLinuxRuntimeService gdkLinuxRuntimeService,
         IBedrockVersionCatalogService bedrockCatalog,
         IXvdToolService xvdToolService,
+        IVcRuntimeService vcRuntimeService,
         ILogger<InstallationService> logger)
     {
         _instanceService = instanceService;
@@ -35,6 +37,7 @@ public sealed class InstallationService : IInstallationService
         _gdkLinuxRuntimeService = gdkLinuxRuntimeService;
         _bedrockCatalog = bedrockCatalog;
         _xvdToolService = xvdToolService;
+        _vcRuntimeService = vcRuntimeService;
         _logger = logger;
     }
 
@@ -43,6 +46,8 @@ public sealed class InstallationService : IInstallationService
         string displayName,
         string gameVersion,
         bool modsEnabled,
+        bool installLeviLamina,
+        string? leviLaminaVersion,
         IProgress<(string Step, double Progress01)>? progress,
         CancellationToken cancellationToken = default)
     {
@@ -78,6 +83,9 @@ public sealed class InstallationService : IInstallationService
         }
 
         config.BedrockVersionUuid = string.IsNullOrWhiteSpace(entry.Uuid) ? null : entry.Uuid;
+        config.LeviLaminaVersion = installLeviLamina && !string.IsNullOrWhiteSpace(leviLaminaVersion)
+            ? leviLaminaVersion.Trim()
+            : null;
         await _instanceService.SaveConfigAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
 
         if (OperatingSystem.IsLinux() && RuntimeInformation.OSArchitecture != Architecture.X64)
@@ -177,6 +185,9 @@ public sealed class InstallationService : IInstallationService
                 "Extração concluída mas Minecraft.Windows.exe não foi encontrado na pasta do jogo.");
         }
 
+        await _vcRuntimeService.EnsureForGameAsync(OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
+            .ConfigureAwait(false);
+
         config.BedrockWindowsExecutablePath = exe;
         config.LinuxWinePrefixPath = Path.Combine(OrionPaths.InstanceRoot(instanceFolderName), "wineprefix");
         await _fileSystem.EnsureDirectoryAsync(config.LinuxWinePrefixPath, cancellationToken).ConfigureAwait(false);
@@ -195,6 +206,8 @@ public sealed class InstallationService : IInstallationService
         _eventBus.Publish(new InstancesChanged());
         _logger.LogInformation("Instância {Folder} instalada ({Version}, exe={Exe})", instanceFolderName, gameVersion, exe);
     }
+
+    
 
     private async Task EnsureMsixvcPresentAsync(
         BedrockVersionEntry entry,

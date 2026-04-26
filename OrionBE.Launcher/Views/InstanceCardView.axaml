@@ -19,6 +19,9 @@
                         Margin="0,8,0,0">
                 <TextBlock Foreground="{DynamicResource OreMutedBrush}" Text="{Binding GameVersion}"/>
                 <TextBlock Foreground="{DynamicResource OreAccentBrush}" Text="{Binding ModeLabel}"/>
+                <TextBlock Foreground="{DynamicResource OreMutedBrush}"
+                           FontSize="11"
+                           Text="{Binding RuntimeLabel}"/>
             </StackPanel>
 
             <DockPanel Grid.Row="2" LastChildFill="True">

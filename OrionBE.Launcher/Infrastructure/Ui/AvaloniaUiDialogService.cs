@@ -109,6 +109,68 @@ public sealed class AvaloniaUiDialogService : IUiDialogService
             return result;
         });
 
+    public Task<string?> PickOptionAsync(string title, string message, IReadOnlyList<string> options) =>
+        Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            var owner = _mainWindow ?? throw new InvalidOperationException("Main window is not attached.");
+            if (options.Count == 0)
+            {
+                return null;
+            }
+
+            string? result = null;
+            var combo = new ComboBox
+            {
+                ItemsSource = options,
+                SelectedIndex = 0,
+                MinHeight = 34,
+            };
+
+            var dlg = new Window
+            {
+                Title = title,
+                Width = 580,
+                Height = 260,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false,
+            };
+
+            var ok = new Button { Content = "OK", MinWidth = 96, HorizontalAlignment = HorizontalAlignment.Right };
+            var cancel = new Button { Content = "Cancel", MinWidth = 96, HorizontalAlignment = HorizontalAlignment.Right };
+
+            ok.Click += (_, _) =>
+            {
+                result = combo.SelectedItem as string ?? options[0];
+                dlg.Close();
+            };
+            cancel.Click += (_, _) =>
+            {
+                result = null;
+                dlg.Close();
+            };
+
+            dlg.Content = new StackPanel
+            {
+                Margin = new Thickness(16),
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+                    combo,
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Spacing = 8,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Children = { cancel, ok },
+                    },
+                },
+            };
+
+            await dlg.ShowDialog(owner).ConfigureAwait(true);
+            return result;
+        });
+
     public Task<InstanceSummary?> PickModdedInstanceAsync(CancellationToken cancellationToken = default) =>
         Dispatcher.UIThread.InvokeAsync(async () =>
         {

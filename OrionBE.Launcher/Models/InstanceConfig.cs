@@ -22,4 +22,7 @@ public sealed class InstanceConfig
 
     /// <summary>Caminho absoluto para <c>Minecraft.Windows.exe</c> (arranque no Wine ou Windows).</summary>
     public string? BedrockWindowsExecutablePath { get; set; }
+
+    /// <summary>LeviLamina version installed for this instance (for mod compatibility checks).</summary>
+    public string? LeviLaminaVersion { get; set; }
 }
