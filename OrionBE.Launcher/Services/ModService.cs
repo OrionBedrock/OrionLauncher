@@ -213,21 +213,41 @@ public sealed class ModService : IModService
         }
 
         var fileName = Path.GetFileName(dllPath);
-        var baseName = string.IsNullOrWhiteSpace(displayName)
-            ? Path.GetFileNameWithoutExtension(fileName)
-            : displayName.Trim();
-        var folder = GlobalModFolderName(baseName, "local");
+        var sourceDir = Path.GetDirectoryName(dllPath) ?? string.Empty;
+        var siblingManifest = await TryReadManifestFromFolderAsync(sourceDir, cancellationToken).ConfigureAwait(false);
+
+        var baseName = !string.IsNullOrWhiteSpace(siblingManifest?.Name)
+            ? siblingManifest!.Name!
+            : (string.IsNullOrWhiteSpace(displayName)
+                ? Path.GetFileNameWithoutExtension(fileName)
+                : displayName.Trim());
+
+        var resolvedVersion = !string.IsNullOrWhiteSpace(siblingManifest?.Version)
+            ? siblingManifest!.Version!
+            : "local";
+        var folder = GlobalModFolderName(baseName, resolvedVersion);
         var root = OrionPaths.GlobalModFolder(folder);
         await _fileSystem.EnsureDirectoryAsync(root, cancellationToken).ConfigureAwait(false);
-        File.Copy(dllPath, Path.Combine(root, fileName), overwrite: true);
+
+        if (string.IsNullOrWhiteSpace(sourceDir) || !Directory.Exists(sourceDir))
+        {
+            throw new InvalidOperationException(
+                $"Unable to resolve source folder for DLL import. dllPath='{dllPath}', sourceDir='{sourceDir}'.");
+        }
+
+        await _fileSystem.CopyDirectoryRecursiveAsync(sourceDir, root, cancellationToken).ConfigureAwait(false);
 
         var config = new ModConfig
         {
             Name = baseName,
-            Version = "local",
+            Version = resolvedVersion,
             SupportedGameVersion = instanceGameVersion,
             SupportedGameVersions = [instanceGameVersion],
-            EntryFile = fileName,
+            EntryFile = !string.IsNullOrWhiteSpace(siblingManifest?.Entry) ? siblingManifest!.Entry : fileName,
+            RequiresLeviLamina = ParseRequiresLeviLamina(siblingManifest),
+            LeviLaminaVersionRange = ParseLeviLaminaRange(siblingManifest),
+            ApiName = ParseApiName(siblingManifest),
+            ApiVersionRange = ParseApiVersionRange(siblingManifest),
             Source = "dll",
         };
         var json = JsonSerializer.Serialize(config, LauncherJson.Options);
