@@ -94,19 +94,11 @@ public sealed class ModService : IModService
             }
 
             var manifest = await TryReadManifestFromFolderAsync(root, cancellationToken).ConfigureAwait(false);
-            var name = manifest?.Name;
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                name = fallbackName;
-            }
+            EnsureManifestIsImportable(manifest);
 
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                name = Path.GetFileNameWithoutExtension(zipPath);
-            }
-
-            var version = !string.IsNullOrWhiteSpace(manifest?.Version) ? manifest!.Version : "local";
-            var folder = GlobalModFolderName(name!, version);
+            var name = manifest!.Name!.Trim();
+            var version = manifest.Version!.Trim();
+            var folder = ImportedModFolderName(name);
             var dest = OrionPaths.GlobalModFolder(folder);
             if (Directory.Exists(dest))
             {
@@ -121,9 +113,7 @@ public sealed class ModService : IModService
                 Version = version,
                 SupportedGameVersion = instanceGameVersion,
                 SupportedGameVersions = [instanceGameVersion],
-                EntryFile = !string.IsNullOrWhiteSpace(manifest?.Entry)
-                    ? manifest!.Entry
-                    : (primaryDll is null ? null : Path.GetFileName(primaryDll)),
+                EntryFile = manifest.Entry!.Trim(),
                 RequiresLeviLamina = ParseRequiresLeviLamina(manifest),
                 LeviLaminaVersionRange = ParseLeviLaminaRange(manifest),
                 ApiName = ParseApiName(manifest),
@@ -215,18 +205,18 @@ public sealed class ModService : IModService
         var fileName = Path.GetFileName(dllPath);
         var sourceDir = Path.GetDirectoryName(dllPath) ?? string.Empty;
         var siblingManifest = await TryReadManifestFromFolderAsync(sourceDir, cancellationToken).ConfigureAwait(false);
+        EnsureManifestIsImportable(siblingManifest);
 
-        var baseName = !string.IsNullOrWhiteSpace(siblingManifest?.Name)
-            ? siblingManifest!.Name!
-            : (string.IsNullOrWhiteSpace(displayName)
-                ? Path.GetFileNameWithoutExtension(fileName)
-                : displayName.Trim());
+        var baseName = siblingManifest!.Name!.Trim();
 
-        var resolvedVersion = !string.IsNullOrWhiteSpace(siblingManifest?.Version)
-            ? siblingManifest!.Version!
-            : "local";
-        var folder = GlobalModFolderName(baseName, resolvedVersion);
+        var resolvedVersion = siblingManifest.Version!.Trim();
+        var folder = ImportedModFolderName(baseName);
         var root = OrionPaths.GlobalModFolder(folder);
+        if (Directory.Exists(root))
+        {
+            Directory.Delete(root, recursive: true);
+        }
+
         await _fileSystem.EnsureDirectoryAsync(root, cancellationToken).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(sourceDir) || !Directory.Exists(sourceDir))
@@ -243,7 +233,7 @@ public sealed class ModService : IModService
             Version = resolvedVersion,
             SupportedGameVersion = instanceGameVersion,
             SupportedGameVersions = [instanceGameVersion],
-            EntryFile = !string.IsNullOrWhiteSpace(siblingManifest?.Entry) ? siblingManifest!.Entry : fileName,
+            EntryFile = siblingManifest.Entry!.Trim(),
             RequiresLeviLamina = ParseRequiresLeviLamina(siblingManifest),
             LeviLaminaVersionRange = ParseLeviLaminaRange(siblingManifest),
             ApiName = ParseApiName(siblingManifest),
@@ -359,6 +349,19 @@ public sealed class ModService : IModService
         return $"{safeName}-{safeVer}";
     }
 
+    private static string ImportedModFolderName(string manifestName)
+    {
+        var folderName = manifestName.Trim();
+        var invalid = Path.GetInvalidFileNameChars();
+        var cleaned = string.Concat(folderName.Where(c => !invalid.Contains(c))).Trim();
+        if (string.IsNullOrWhiteSpace(cleaned))
+        {
+            throw new InvalidOperationException("manifest.json inválido: campo 'name' não pode gerar nome de pasta válido.");
+        }
+
+        return cleaned;
+    }
+
     private static void ExtractZipSafely(string zipPath, string destinationDir)
     {
         Directory.CreateDirectory(destinationDir);
@@ -461,6 +464,23 @@ public sealed class ModService : IModService
 
         var json = await File.ReadAllTextAsync(manifestPath, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<ImportedManifest>(json, LauncherJson.Options);
+    }
+
+    private static void EnsureManifestIsImportable(ImportedManifest? manifest)
+    {
+        if (manifest is null)
+        {
+            throw new InvalidOperationException(
+                "Importação rejeitada: manifest.json é obrigatório e deve conter os campos 'name', 'entry' e 'version'.");
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.Name)
+            || string.IsNullOrWhiteSpace(manifest.Entry)
+            || string.IsNullOrWhiteSpace(manifest.Version))
+        {
+            throw new InvalidOperationException(
+                "Importação rejeitada: manifest.json deve conter os campos 'name', 'entry' e 'version' preenchidos.");
+        }
     }
 
     private static bool ParseRequiresLeviLamina(ImportedManifest? manifest)
