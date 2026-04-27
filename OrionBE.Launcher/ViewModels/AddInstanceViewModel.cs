@@ -1,4 +1,9 @@
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Text;
+using System.Threading;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,6 +14,11 @@ namespace OrionBE.Launcher.ViewModels;
 
 public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
 {
+    private const int MaxInstallLogChars = 384_000;
+
+    private readonly ConcurrentQueue<InstallationLogLine> _installLogQueue = new();
+    private int _installLogDrainScheduled;
+
     private readonly IApiService _apiService;
     private readonly IInstanceService _instanceService;
     private readonly IInstallationService _installationService;
@@ -16,6 +26,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     private readonly IAppEventBus _eventBus;
     private readonly ILeviLaminaCompatibilityService _leviLaminaCompatibilityService;
     private readonly IDisposable _progressSubscription;
+    private readonly IDisposable _installLogSubscription;
 
     public ObservableCollection<string> GameVersions { get; } = new();
     public ObservableCollection<string> LeviLaminaVersions { get; } = new();
@@ -36,12 +47,16 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         _leviLaminaCompatibilityService = leviLaminaCompatibilityService;
         _progressSubscription = _eventBus.Subscribe<InstallationProgressChanged>(e =>
         {
-            Dispatcher.UIThread.Post(() =>
-            {
-                InstallProgress = e.Progress01;
-                InstallStatus = e.Step;
-            });
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    InstallProgress = e.Progress01;
+                    InstallStatus = e.Step;
+                },
+                DispatcherPriority.Normal);
         });
+
+        _installLogSubscription = _eventBus.Subscribe<InstallationLogLine>(OnInstallLogLinePublished);
 
         _ = InitializeAsync();
     }
@@ -73,7 +88,90 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private string _installStatus = string.Empty;
 
+    [ObservableProperty]
+    private string _installLogText = string.Empty;
+
     partial void OnInstanceNameChanged(string value) => CreateCommand.NotifyCanExecuteChanged();
+
+    partial void OnInstallLogTextChanged(string value) => CopyInstallLogCommand.NotifyCanExecuteChanged();
+
+    private void OnInstallLogLinePublished(InstallationLogLine e)
+    {
+        _installLogQueue.Enqueue(e);
+        if (Interlocked.CompareExchange(ref _installLogDrainScheduled, 1, 0) != 0)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(DrainInstallLogQueue, DispatcherPriority.Background);
+    }
+
+    /// <summary>
+    /// Drena a fila na thread de UI em lotes (uma ou poucas atualizações de propriedade por rajada),
+    /// evitando milhares de <see cref="Dispatcher.UIThread.Post"/> e concatenações O(n²) no TextBox.
+    /// </summary>
+    private void DrainInstallLogQueue()
+    {
+        Interlocked.Exchange(ref _installLogDrainScheduled, 0);
+
+        while (true)
+        {
+            var sb = new StringBuilder(Math.Min(4096, MaxInstallLogChars));
+            while (_installLogQueue.TryDequeue(out var line))
+            {
+                var prefix = line.Severity switch
+                {
+                    InstallationLogSeverity.Error => "[ERRO] ",
+                    InstallationLogSeverity.Warning => "[AVISO] ",
+                    _ => string.Empty,
+                };
+                sb.Append($"{DateTime.Now:HH:mm:ss} {prefix}{line.Message}\n");
+            }
+
+            if (sb.Length == 0)
+            {
+                break;
+            }
+
+            var chunk = sb.ToString();
+            var combined = string.IsNullOrEmpty(InstallLogText) ? chunk : InstallLogText + chunk;
+            if (combined.Length > MaxInstallLogChars)
+            {
+                combined = TrimInstallLog(combined, MaxInstallLogChars);
+            }
+
+            InstallLogText = combined;
+            CopyInstallLogCommand.NotifyCanExecuteChanged();
+
+            if (_installLogQueue.IsEmpty)
+            {
+                break;
+            }
+        }
+
+        if (!_installLogQueue.IsEmpty &&
+            Interlocked.CompareExchange(ref _installLogDrainScheduled, 1, 0) == 0)
+        {
+            Dispatcher.UIThread.Post(DrainInstallLogQueue, DispatcherPriority.Background);
+        }
+    }
+
+    private static string TrimInstallLog(string text, int maxChars)
+    {
+        if (text.Length <= maxChars)
+        {
+            return text;
+        }
+
+        const string head = "… [início do registo omitido]\n\n";
+        var budget = maxChars - head.Length;
+        if (budget <= 0)
+        {
+            return text[..maxChars];
+        }
+
+        return head + text.Substring(text.Length - budget);
+    }
 
     partial void OnIsInstallingChanged(bool value) => CreateCommand.NotifyCanExecuteChanged();
 
@@ -123,6 +221,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
 
     private async Task CreateCoreAsync()
     {
+        InstallLogText = string.Empty;
         IsInstalling = true;
         InstallProgress = 0;
         InstallStatus = "Preparing...";
@@ -130,14 +229,6 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         try
         {
             var folder = await _instanceService.AllocateInstanceFolderNameAsync(InstanceName.Trim()).ConfigureAwait(false);
-            var progress = new Progress<(string Step, double Progress01)>(p =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    InstallProgress = p.Progress01;
-                    InstallStatus = p.Step;
-                });
-            });
 
             await _installationService
                 .InstallNewInstanceAsync(
@@ -147,14 +238,45 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
                     IsModsMode,
                     IsModsMode && InstallWithLeviLamina && IsSelectedVersionLeviCompatible,
                     IsModsMode && InstallWithLeviLamina ? SelectedLeviLaminaVersion : null,
-                    progress)
+                    progress: null)
                 .ConfigureAwait(false);
 
             _navigationService.GoBack();
         }
+        catch (Exception ex)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                InstallLogText += $"{DateTime.Now:HH:mm:ss} [ERRO] {ex.Message}\n";
+                if (ex.InnerException is not null)
+                {
+                    InstallLogText += $"{DateTime.Now:HH:mm:ss} [ERRO] Detalhe: {ex.InnerException.Message}\n";
+                }
+            });
+        }
         finally
         {
             IsInstalling = false;
+        }
+    }
+
+    private bool CanCopyInstallLog() => !string.IsNullOrWhiteSpace(InstallLogText);
+
+    [RelayCommand(CanExecute = nameof(CanCopyInstallLog))]
+    private async Task CopyInstallLogAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InstallLogText))
+        {
+            return;
+        }
+
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } window })
+        {
+            var clipboard = window.Clipboard;
+            if (clipboard is not null)
+            {
+                await clipboard.SetTextAsync(InstallLogText).ConfigureAwait(false);
+            }
         }
     }
 
@@ -207,5 +329,9 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public void Dispose() => _progressSubscription.Dispose();
+    public void Dispose()
+    {
+        _progressSubscription.Dispose();
+        _installLogSubscription.Dispose();
+    }
 }

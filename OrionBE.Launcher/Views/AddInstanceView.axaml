@@ -67,6 +67,31 @@
                     <TextBlock Text="{Binding InstallStatus}" Foreground="{DynamicResource OreMutedBrush}"/>
                     <ProgressBar Minimum="0" Maximum="1" Value="{Binding InstallProgress}" Height="10"/>
                 </StackPanel>
+
+                <Border Background="{DynamicResource OreSurfaceBrush}"
+                        CornerRadius="10"
+                        Padding="12">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Registo da instalação"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    Content="Copiar registos"
+                                    MinWidth="140"
+                                    Command="{Binding CopyInstallLogCommand}"/>
+                        </Grid>
+                        <TextBox Text="{Binding InstallLogText}"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
+                                 FontSize="12"
+                                 MinHeight="160"
+                                 MaxHeight="280"
+                                 Watermark="Os passos da instalação aparecem aqui ao criar a instância."/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 

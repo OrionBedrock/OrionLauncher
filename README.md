@@ -44,6 +44,17 @@ It acts as an integrated instance + mods manager with LeviLamina-oriented moddin
 
 - `appimagetool`
 
+### Dependency install script (Linux)
+
+The repo includes [`scripts/install-build-deps.sh`](scripts/install-build-deps.sh), which installs the **.NET 10 SDK** (via your distro when supported, otherwise [Microsoft’s install script](https://learn.microsoft.com/dotnet/core/tools/dotnet-install-script)) and can optionally install **`appimagetool`** for AppImage builds (see script header for flags and environment variables).
+
+```bash
+chmod +x scripts/install-build-deps.sh
+./scripts/install-build-deps.sh
+```
+
+Useful options: `--with-appimage`, `--verify` (runs `dotnet restore` + `dotnet build` after setup).
+
 ## Build Instructions
 
 ### 1) Restore + Build

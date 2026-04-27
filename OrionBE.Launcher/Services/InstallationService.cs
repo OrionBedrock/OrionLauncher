@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -81,10 +82,13 @@ public sealed class InstallationService : IInstallationService
 
         await _instanceService.SaveConfigAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
 
+        UiLog($"Início da instalação: pasta \"{instanceFolderName}\", versão do jogo \"{gameVersion}\", mods={(modsEnabled ? "sim" : "não")}, LeviLamina={(installLeviLamina ? leviLaminaVersion ?? "(versão não definida)" : "não")}.");
+
         void Report(string step, double p01)
         {
             progress?.Report((step, p01));
             _eventBus.Publish(new InstallationProgressChanged(step, p01));
+            UiLog(step);
         }
 
         Report("A resolver versão no catálogo Bedrock", 0.02);
@@ -115,8 +119,14 @@ public sealed class InstallationService : IInstallationService
         if (OperatingSystem.IsLinux() && _gdkLinuxRuntimeService.IsSupported)
         {
             Report("A instalar GDK Proton + UMU", 0.06);
+            var gdkProgress = new Progress<(string Step, double Progress01)>(p =>
+            {
+                progress?.Report(p);
+                _eventBus.Publish(new InstallationProgressChanged(p.Step, p.Progress01));
+                UiLog(p.Step);
+            });
             var gdk = await _gdkLinuxRuntimeService
-                .EnsureRuntimeAsync(progress, cancellationToken)
+                .EnsureRuntimeAsync(gdkProgress, cancellationToken)
                 .ConfigureAwait(false);
 
             if (gdk is not null)
@@ -161,7 +171,9 @@ public sealed class InstallationService : IInstallationService
             try
             {
                 Report("A desencriptar pacote (CIK)", 0.66);
+                UiLog("CIK: a tentar desencriptar .msixvc com as chaves CIK disponíveis (várias tentativas possíveis).");
                 await _xvdToolService.DecryptMsixvcInPlaceAsync(xvdtool, workMsixvc, cancellationToken).ConfigureAwait(false);
+                UiLog("CIK: desencriptação concluída com sucesso.");
 
                 var gameDir = OrionPaths.InstanceGame(instanceFolderName);
                 if (Directory.Exists(gameDir))
@@ -172,7 +184,9 @@ public sealed class InstallationService : IInstallationService
                 await _fileSystem.EnsureDirectoryAsync(gameDir, cancellationToken).ConfigureAwait(false);
 
                 Report("A extrair ficheiros do jogo", 0.72);
+                UiLog($"Extração: a extrair conteúdo para {gameDir}");
                 await _xvdToolService.ExtractMsixvcAsync(xvdtool, workMsixvc, gameDir, cancellationToken).ConfigureAwait(false);
+                UiLog("Extração do pacote concluída.");
             }
             finally
             {
@@ -236,6 +250,7 @@ public sealed class InstallationService : IInstallationService
         CancellationToken cancellationToken)
     {
         var mirror = await PickFastestMirrorAsync(entry.Urls, cancellationToken).ConfigureAwait(false);
+        UiLog($"Mirror de download seleccionado: {mirror}");
         var uri = new Uri(mirror);
         var expected = await _downloadService.TryGetContentLengthAsync(uri, cancellationToken).ConfigureAwait(false);
         if (expected is > 0 && File.Exists(destinationPath))
@@ -244,14 +259,30 @@ public sealed class InstallationService : IInstallationService
             if (len == expected.Value)
             {
                 _logger.LogInformation("A reutilizar .msixvc em cache: {Path}", destinationPath);
+                UiLog($"Pacote .msixvc já existe em cache com o tamanho esperado ({len} bytes). A saltar download.");
                 downloadProgress(1);
                 return;
             }
         }
 
+        UiLog("A iniciar download do ficheiro .msixvc…");
+        var lastLogged = -0.11;
         await _downloadService
-            .DownloadToFileAsync(uri, destinationPath, new Progress<double>(downloadProgress), cancellationToken)
+            .DownloadToFileAsync(
+                uri,
+                destinationPath,
+                new Progress<double>(p =>
+                {
+                    downloadProgress(p);
+                    if (p >= 1 || p - lastLogged >= 0.10)
+                    {
+                        lastLogged = p >= 1 ? 1 : Math.Floor(p / 0.10) * 0.10;
+                        UiLog($"Progresso do download .msixvc: {(p * 100):F0}%");
+                    }
+                }),
+                cancellationToken)
             .ConfigureAwait(false);
+        UiLog("Download do .msixvc concluído.");
     }
 
     private async Task<string> PickFastestMirrorAsync(IReadOnlyList<string> urls, CancellationToken cancellationToken)
@@ -688,6 +719,25 @@ public sealed class InstallationService : IInstallationService
             _logger.LogInformation("{File} stderr: {Output}", fileName, stderr.Trim());
         }
 
+        UiLog($"{Path.GetFileName(fileName)} terminou com código {process.ExitCode}.");
+        var merged = string.Join("\n", new[] { stdout, stderr }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        if (!string.IsNullOrWhiteSpace(merged))
+        {
+            var t = merged.Trim();
+            const int maxUiProcessChars = 480;
+            if (t.Length > maxUiProcessChars)
+            {
+                t = t[..maxUiProcessChars] + "…";
+            }
+
+            UiLog($"Saída do processo ({Path.GetFileName(fileName)}):\n{t}");
+        }
+
         return process.ExitCode;
+    }
+
+    private void UiLog(string message, InstallationLogSeverity severity = InstallationLogSeverity.Info)
+    {
+        _eventBus.Publish(new InstallationLogLine(message, severity));
     }
 }
