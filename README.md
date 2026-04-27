@@ -15,7 +15,7 @@ It acts as an integrated instance + mods manager with LeviLamina-oriented moddin
 
 - ✅ Instance manager
 - ✅ Automated Proton + Linux runtime dependency setup
-- 🚧 Mod integration
+- ✅ Mod integration
 - 🚧 Mod search/import
 - 🚧 Profile system (player name + skin)
 - 🚧 Proxy pass for Microsoft login + online server access
