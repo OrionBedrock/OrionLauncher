@@ -44,6 +44,12 @@ It acts as an integrated instance + mods manager with LeviLamina-oriented moddin
 
 - `appimagetool`
 
+### XVDTool / .NET 8 runtime (Linux — creating instances)
+
+The installer downloads **[AmethystAPI/xvdtool](https://github.com/AmethystAPI/xvdtool)** from GitHub. That binary is **framework-dependent** and targets **.NET 8**. OrionLauncher starts it with **`DOTNET_ROLL_FORWARD=LatestMajor`** so a system that only has the **.NET 10** runtime (typical when you installed the SDK for `net10.0`) can usually run XVDTool without a separate install.
+
+If you still see errors like *“You must install or update .NET”* / *framework ‘Microsoft.NETCore.App’, version ‘8.0.0’* during **CIK decryption**, install the **[.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0)** for your distro ([Linux instructions](https://learn.microsoft.com/dotnet/core/install/linux)).
+
 ### Dependency install script (Linux)
 
 The repo includes [`scripts/install-build-deps.sh`](scripts/install-build-deps.sh), which installs the **.NET 10 SDK** (via your distro when supported, otherwise [Microsoft’s install script](https://learn.microsoft.com/dotnet/core/tools/dotnet-install-script)) and can optionally install **`appimagetool`** for AppImage builds (see script header for flags and environment variables).

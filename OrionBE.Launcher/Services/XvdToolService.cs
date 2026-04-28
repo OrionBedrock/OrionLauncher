@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using OrionBE.Launcher.Core;
+using OrionBE.Launcher.Core.Events;
 
 namespace OrionBE.Launcher.Services;
 
@@ -13,17 +14,20 @@ public sealed class XvdToolService : IXvdToolService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IDownloadService _downloadService;
     private readonly IFileSystemService _fileSystem;
+    private readonly IAppEventBus _eventBus;
     private readonly ILogger<XvdToolService> _logger;
 
     public XvdToolService(
         IHttpClientFactory httpClientFactory,
         IDownloadService downloadService,
         IFileSystemService fileSystem,
+        IAppEventBus eventBus,
         ILogger<XvdToolService> logger)
     {
         _httpClientFactory = httpClientFactory;
         _downloadService = downloadService;
         _fileSystem = fileSystem;
+        _eventBus = eventBus;
         _logger = logger;
     }
 
@@ -31,21 +35,21 @@ public sealed class XvdToolService : IXvdToolService
     {
         if (OperatingSystem.IsMacOS())
         {
-            _logger.LogWarning("XVDTool não suporta macOS.");
+            _logger.LogWarning("XVDTool is not supported on macOS.");
             return null;
         }
 
         if (OperatingSystem.IsLinux() && System.Runtime.InteropServices.RuntimeInformation.OSArchitecture
             != System.Runtime.InteropServices.Architecture.X64)
         {
-            _logger.LogWarning("XVDTool oficial é Linux x64; arquitetura atual não suportada.");
+            _logger.LogWarning("Official XVDTool targets Linux x64; current architecture is not supported.");
             return null;
         }
 
         if (OperatingSystem.IsWindows() && System.Runtime.InteropServices.RuntimeInformation.OSArchitecture
             != System.Runtime.InteropServices.Architecture.X64)
         {
-            _logger.LogWarning("XVDTool oficial é Windows x64; arquitetura atual não suportada.");
+            _logger.LogWarning("Official XVDTool targets Windows x64; current architecture is not supported.");
             return null;
         }
 
@@ -65,7 +69,7 @@ public sealed class XvdToolService : IXvdToolService
         using var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError("GitHub API falhou para {Repo}: {Status}", Repository, response.StatusCode);
+            _logger.LogError("GitHub API failed for {Repo}: {Status}", Repository, response.StatusCode);
             return null;
         }
 
@@ -124,7 +128,7 @@ public sealed class XvdToolService : IXvdToolService
 
         if (chosen.ValueKind == JsonValueKind.Undefined)
         {
-            _logger.LogError("Nenhum asset xvdtool compatível com esta plataforma.");
+            _logger.LogError("No compatible xvdtool release asset for this platform.");
             return null;
         }
 
@@ -160,7 +164,7 @@ public sealed class XvdToolService : IXvdToolService
         }
         else
         {
-            throw new InvalidOperationException($"Formato de arquivo xvdtool não suportado: {assetName}");
+            throw new InvalidOperationException($"Unsupported xvdtool archive format: {assetName}");
         }
 
         try
@@ -169,7 +173,7 @@ public sealed class XvdToolService : IXvdToolService
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Não foi possível apagar arquivo {Path}", archivePath);
+            _logger.LogDebug(ex, "Could not delete archive {Path}", archivePath);
         }
 
         if (OperatingSystem.IsLinux())
@@ -183,9 +187,13 @@ public sealed class XvdToolService : IXvdToolService
     public async Task DecryptMsixvcInPlaceAsync(string xvdtoolPath, string msixvcPath, CancellationToken cancellationToken = default)
     {
         Exception? last = null;
+        var total = BedrockCikKeys.UuidToHex.Count;
+        var index = 0;
         foreach (var (uuid, hex) in BedrockCikKeys.UuidToHex)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            index++;
+            UiLog($"CIK attempt {index}/{total}: UUID {uuid} — running XVDTool…");
             try
             {
                 await RunXvdToolAsync(
@@ -193,18 +201,63 @@ public sealed class XvdToolService : IXvdToolService
                         ["-nd", "-eu", "-cik", uuid, "-cikdata", hex, msixvcPath],
                         cancellationToken)
                     .ConfigureAwait(false);
+                UiLog($"CIK attempt {index}/{total}: UUID {uuid} — success (package decrypted).");
                 return;
             }
             catch (Exception ex)
             {
                 last = ex;
-                _logger.LogDebug(ex, "CIK {Uuid} falhou para {File}", uuid, msixvcPath);
+                _logger.LogDebug(ex, "CIK {Uuid} failed for {File}", uuid, msixvcPath);
+                UiLog(
+                    $"CIK attempt {index}/{total}: UUID {uuid} — failed: {ShortUiMessage(ex.Message)}",
+                    InstallationLogSeverity.Warning);
             }
         }
 
+        var detail = last is not null ? FormatXvdToolUserHint(last.Message) : string.Empty;
         throw new InvalidOperationException(
-            "Falha ao desencriptar o pacote .msixvc com as chaves CIK conhecidas. "
-            + (last is not null ? last.Message : ""));
+            "Failed to decrypt the .msixvc package with the known CIK keys. "
+            + (last is not null ? last.Message : "")
+            + detail);
+    }
+
+    private void UiLog(string message, InstallationLogSeverity severity = InstallationLogSeverity.Info)
+    {
+        _eventBus.Publish(new InstallationLogLine(message, severity));
+    }
+
+    private static string ShortUiMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return "(no message)";
+        }
+
+        var oneLine = message.Replace('\r', ' ').Replace('\n', ' ').Trim();
+        const int max = 320;
+        return oneLine.Length <= max ? oneLine : oneLine[..max] + "…";
+    }
+
+    private static string FormatXvdToolUserHint(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return string.Empty;
+        }
+
+        if (!message.Contains("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase)
+            && !message.Contains("install or update .NET", StringComparison.OrdinalIgnoreCase)
+            && !message.Contains("app-launch-failed", StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Empty;
+        }
+
+        return "\n\n"
+            + "XVDTool needs a compatible .NET runtime (the official binary targets .NET 8). "
+            + "The launcher sets DOTNET_ROLL_FORWARD=LatestMajor to try the already installed .NET 10 runtime. "
+            + "If this error persists, install the .NET 8 runtime (Linux guide: "
+            + "https://learn.microsoft.com/dotnet/core/install/linux ; downloads: "
+            + "https://dotnet.microsoft.com/download/dotnet/8.0 ).";
     }
 
     public Task ExtractMsixvcAsync(string xvdtoolPath, string msixvcPath, string outputFolder, CancellationToken cancellationToken = default) =>
@@ -261,7 +314,7 @@ public sealed class XvdToolService : IXvdToolService
         if (proc.ExitCode != 0)
         {
             var err = await proc.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-            throw new InvalidOperationException($"{fileName} saiu com código {proc.ExitCode}: {err}");
+            throw new InvalidOperationException($"{fileName} exited with code {proc.ExitCode}: {err}");
         }
     }
 
@@ -273,6 +326,7 @@ public sealed class XvdToolService : IXvdToolService
         proc.StartInfo.RedirectStandardError = true;
         proc.StartInfo.UseShellExecute = false;
         proc.StartInfo.CreateNoWindow = true;
+        proc.StartInfo.Environment["DOTNET_ROLL_FORWARD"] = "LatestMajor";
         foreach (var a in args)
         {
             proc.StartInfo.ArgumentList.Add(a);
@@ -286,7 +340,7 @@ public sealed class XvdToolService : IXvdToolService
         var err = await stderr.ConfigureAwait(false);
         if (proc.ExitCode != 0)
         {
-            throw new InvalidOperationException($"XVDTool saiu com código {proc.ExitCode}. {err}".Trim());
+            throw new InvalidOperationException($"XVDTool exited with code {proc.ExitCode}. {err}".Trim());
         }
     }
 }

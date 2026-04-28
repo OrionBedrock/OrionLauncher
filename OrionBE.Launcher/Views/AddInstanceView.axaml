@@ -73,11 +73,11 @@
                         Padding="12">
                     <StackPanel Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Registo da instalação"
+                            <TextBlock Text="Installation log"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                             <Button Grid.Column="1"
-                                    Content="Copiar registos"
+                                    Content="Copy logs"
                                     MinWidth="140"
                                     Command="{Binding CopyInstallLogCommand}"/>
                         </Grid>
@@ -89,7 +89,7 @@
                                  FontSize="12"
                                  MinHeight="160"
                                  MaxHeight="280"
-                                 Watermark="Os passos da instalação aparecem aqui ao criar a instância."/>
+                                 Watermark="Installation steps appear here while creating an instance."/>
                     </StackPanel>
                 </Border>
             </StackPanel>

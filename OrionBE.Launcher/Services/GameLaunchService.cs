@@ -23,20 +23,20 @@ public sealed class GameLaunchService : IGameLaunchService
         var summary = await _instanceService.GetAsync(instanceFolderName, cancellationToken).ConfigureAwait(false);
         if (summary is null)
         {
-            throw new InvalidOperationException("Instância não encontrada.");
+            throw new InvalidOperationException("Instance not found.");
         }
 
         var exe = summary.Config.BedrockWindowsExecutablePath;
         if (string.IsNullOrWhiteSpace(exe) || !File.Exists(exe))
         {
             throw new InvalidOperationException(
-                "Executável do jogo não encontrado. Reinstale a instância ou verifique a pasta do jogo.");
+                "Game executable not found. Reinstall the instance or check the game folder.");
         }
 
         var workDir = Path.GetDirectoryName(exe);
         if (string.IsNullOrEmpty(workDir))
         {
-            throw new InvalidOperationException("Caminho do executável inválido.");
+            throw new InvalidOperationException("Invalid executable path.");
         }
 
         await _vcRuntimeService.EnsureForGameAsync(OrionBE.Launcher.Core.OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
@@ -49,13 +49,13 @@ public sealed class GameLaunchService : IGameLaunchService
             if (string.IsNullOrWhiteSpace(umu) || !File.Exists(umu))
             {
                 throw new InvalidOperationException(
-                    "umu-run não configurado. Abra as definições da instância ou reinstale no Linux para obter o runtime GDK.");
+                    "umu-run is not configured. Open instance settings or reinstall on Linux to obtain the GDK runtime.");
             }
 
             if (string.IsNullOrWhiteSpace(proton) || !Directory.Exists(proton))
             {
                 throw new InvalidOperationException(
-                    "PROTONPATH (GDK Proton) não configurado. Reinstale a instância no Linux.");
+                    "PROTONPATH (GDK Proton) is not configured. Reinstall the instance on Linux.");
             }
 
             var psi = new ProcessStartInfo
@@ -72,7 +72,7 @@ public sealed class GameLaunchService : IGameLaunchService
             }
 
             Process.Start(psi);
-            _logger.LogInformation("Jogo iniciado via umu-run: {Exe}", exe);
+            _logger.LogInformation("Game started via umu-run: {Exe}", exe);
             return;
         }
 
@@ -85,10 +85,10 @@ public sealed class GameLaunchService : IGameLaunchService
                     WorkingDirectory = workDir,
                     UseShellExecute = true,
                 });
-            _logger.LogInformation("Jogo iniciado (Windows): {Exe}", exe);
+            _logger.LogInformation("Game started (Windows): {Exe}", exe);
             return;
         }
 
-        throw new PlatformNotSupportedException("Arranque Bedrock só está implementado para Linux e Windows.");
+        throw new PlatformNotSupportedException("Bedrock launch is only implemented for Linux and Windows.");
     }
 }

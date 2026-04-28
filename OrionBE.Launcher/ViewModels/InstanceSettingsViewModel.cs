@@ -120,11 +120,11 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task DeleteInstanceAsync()
     {
-        var title = "Excluir instância";
+        var title = "Delete instance";
         var message =
-            $"A pasta e todos os ficheiros desta instância serão apagados de disco.\n\n" +
+            $"The folder and all files for this instance will be deleted from disk.\n\n" +
             $"“{DisplayName}”\n" +
-            $"Isto não pode ser desfeito. Continuar?";
+            $"This cannot be undone. Continue?";
         if (!await _uiDialogService.ConfirmAsync(title, message).ConfigureAwait(true))
         {
             return;

@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 
 namespace OrionBE.Launcher.Services;
 
-/// <summary>Evita duas instalações em paralelo no mesmo ficheiro .msixvc em cache.</summary>
 internal static class BedrockInstallLock
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> Locks = new(StringComparer.Ordinal);

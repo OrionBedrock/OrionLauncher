@@ -71,12 +71,12 @@ public sealed class ModService : IModService
     {
         if (!File.Exists(zipPath))
         {
-            throw new FileNotFoundException("Arquivo .zip não encontrado.", zipPath);
+            throw new FileNotFoundException(".zip file not found.", zipPath);
         }
 
         if (!zipPath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Somente arquivos .zip são suportados nesse fluxo.");
+            throw new InvalidOperationException("Only .zip files are supported in this flow.");
         }
 
         var temp = Path.Combine(OrionPaths.Cache, "mod-import", Guid.NewGuid().ToString("N"));
@@ -135,7 +135,6 @@ public sealed class ModService : IModService
             }
             catch
             {
-                // best effort
             }
         }
     }
@@ -194,12 +193,12 @@ public sealed class ModService : IModService
     {
         if (!File.Exists(dllPath))
         {
-            throw new FileNotFoundException("Arquivo .dll não encontrado.", dllPath);
+            throw new FileNotFoundException(".dll file not found.", dllPath);
         }
 
         if (!dllPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Somente arquivos .dll são suportados nesse fluxo.");
+            throw new InvalidOperationException("Only .dll files are supported in this flow.");
         }
 
         var fileName = Path.GetFileName(dllPath);
@@ -356,7 +355,7 @@ public sealed class ModService : IModService
         var cleaned = string.Concat(folderName.Where(c => !invalid.Contains(c))).Trim();
         if (string.IsNullOrWhiteSpace(cleaned))
         {
-            throw new InvalidOperationException("manifest.json inválido: campo 'name' não pode gerar nome de pasta válido.");
+            throw new InvalidOperationException("Invalid manifest.json: field 'name' cannot produce a valid folder name.");
         }
 
         return cleaned;
@@ -471,7 +470,7 @@ public sealed class ModService : IModService
         if (manifest is null)
         {
             throw new InvalidOperationException(
-                "Importação rejeitada: manifest.json é obrigatório e deve conter os campos 'name', 'entry' e 'version'.");
+                "Import rejected: manifest.json is required and must include 'name', 'entry', and 'version'.");
         }
 
         if (string.IsNullOrWhiteSpace(manifest.Name)
@@ -479,7 +478,7 @@ public sealed class ModService : IModService
             || string.IsNullOrWhiteSpace(manifest.Version))
         {
             throw new InvalidOperationException(
-                "Importação rejeitada: manifest.json deve conter os campos 'name', 'entry' e 'version' preenchidos.");
+                "Import rejected: manifest.json must have non-empty 'name', 'entry', and 'version'.");
         }
     }
 

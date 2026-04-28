@@ -3,7 +3,6 @@ using OrionBE.Launcher.Models;
 
 namespace OrionBE.Launcher.Services;
 
-/// <summary>Catálogo real de versões Bedrock + catálogo de mods mock (UI).</summary>
 public sealed class LauncherApiService : IApiService
 {
     private static readonly IReadOnlyList<ModCatalogItem> ModCatalog =

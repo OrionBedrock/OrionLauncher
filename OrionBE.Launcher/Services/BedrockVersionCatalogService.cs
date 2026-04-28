@@ -8,9 +8,6 @@ using OrionBE.Launcher.Models;
 
 namespace OrionBE.Launcher.Services;
 
-/// <summary>
-/// Remote list from <see href="https://github.com/LukasPAH/minecraft-windows-gdk-version-db">minecraft-windows-gdk-version-db</see>.
-/// </summary>
 public sealed class BedrockVersionCatalogService : IBedrockVersionCatalogService
 {
     public const string DatabaseUrl =
@@ -130,7 +127,7 @@ public sealed class BedrockVersionCatalogService : IBedrockVersionCatalogService
             .ConfigureAwait(false);
         if (dto is null)
         {
-            throw new InvalidOperationException("Versão remota inválida (JSON vazio).");
+            throw new InvalidOperationException("Invalid remote version data (empty JSON).");
         }
 
         static string FixVersion(string v) =>

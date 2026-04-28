@@ -82,7 +82,7 @@ public sealed class InstallationService : IInstallationService
 
         await _instanceService.SaveConfigAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
 
-        UiLog($"Início da instalação: pasta \"{instanceFolderName}\", versão do jogo \"{gameVersion}\", mods={(modsEnabled ? "sim" : "não")}, LeviLamina={(installLeviLamina ? leviLaminaVersion ?? "(versão não definida)" : "não")}.");
+        UiLog($"Installation start: folder \"{instanceFolderName}\", game version \"{gameVersion}\", mods={(modsEnabled ? "yes" : "no")}, LeviLamina={(installLeviLamina ? leviLaminaVersion ?? "(not set)" : "no")}.");
 
         void Report(string step, double p01)
         {
@@ -91,12 +91,12 @@ public sealed class InstallationService : IInstallationService
             UiLog(step);
         }
 
-        Report("A resolver versão no catálogo Bedrock", 0.02);
+        Report("Resolving version in Bedrock catalog", 0.02);
         var entry = await _bedrockCatalog.TryResolveAsync(gameVersion, cancellationToken).ConfigureAwait(false);
         if (entry is null)
         {
             throw new InvalidOperationException(
-                $"Versão \"{gameVersion}\" não encontrada no catálogo. Atualize a lista ou escolha outra versão.");
+                $"Version \"{gameVersion}\" was not found in the catalog. Refresh the list or pick another version.");
         }
 
         config.BedrockVersionUuid = string.IsNullOrWhiteSpace(entry.Uuid) ? null : entry.Uuid;
@@ -108,17 +108,17 @@ public sealed class InstallationService : IInstallationService
         if (OperatingSystem.IsLinux() && RuntimeInformation.OSArchitecture != Architecture.X64)
         {
             throw new InvalidOperationException(
-                "A instalação do pacote .msixvc (XVDTool) só é suportada em Linux x64. Use um sistema x86_64 ou instale manualmente.");
+                "Installing the .msixvc package (XVDTool) is only supported on Linux x64. Use an x86_64 system or install manually.");
         }
 
         if (OperatingSystem.IsWindows() && RuntimeInformation.OSArchitecture != Architecture.X64)
         {
-            throw new InvalidOperationException("XVDTool neste fluxo requer Windows x64.");
+            throw new InvalidOperationException("This flow requires XVDTool on Windows x64.");
         }
 
         if (OperatingSystem.IsLinux() && _gdkLinuxRuntimeService.IsSupported)
         {
-            Report("A instalar GDK Proton + UMU", 0.06);
+            Report("Installing GDK Proton + UMU", 0.06);
             var gdkProgress = new Progress<(string Step, double Progress01)>(p =>
             {
                 progress?.Report(p);
@@ -134,23 +134,23 @@ public sealed class InstallationService : IInstallationService
                 config.LinuxUmuRunPath = gdk.UmuRunPath;
                 config.LinuxProtonPath = gdk.ProtonDirectoryPath;
                 await _instanceService.SaveConfigAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
-                Report("Runtime Linux guardado na configuração", 0.12);
+                Report("Linux runtime saved to instance config", 0.12);
             }
             else
             {
-                Report("Runtime GDK Linux falhou ou foi ignorado (ver registos)", 0.12);
+                Report("Linux GDK runtime failed or was skipped (see logs)", 0.12);
             }
         }
         else if (!OperatingSystem.IsLinux())
         {
-            Report("A ignorar Proton/UMU (não Linux)", 0.1);
+            Report("Skipping Proton/UMU (not Linux)", 0.1);
         }
 
-        Report("A obter XVDTool (github.com/AmethystAPI/xvdtool)", 0.14);
+        Report("Fetching XVDTool (github.com/AmethystAPI/xvdtool)", 0.14);
         var xvdtool = await _xvdToolService.EnsureToolAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrEmpty(xvdtool))
         {
-            throw new InvalidOperationException("Não foi possível obter o XVDTool. Verifique a rede e a arquitetura (x64).");
+            throw new InvalidOperationException("Could not obtain XVDTool. Check your network and use x64.");
         }
 
         await _fileSystem.EnsureDirectoryAsync(OrionPaths.BedrockMsixvcCacheDir, cancellationToken).ConfigureAwait(false);
@@ -161,19 +161,19 @@ public sealed class InstallationService : IInstallationService
 
         using (await BedrockInstallLock.AcquireAsync(entry.Version, cancellationToken).ConfigureAwait(false))
         {
-            Report("A escolher mirror e a descarregar .msixvc", 0.18);
-            await EnsureMsixvcPresentAsync(entry, cachedMsixvc, p => Report("A descarregar .msixvc", 0.18 + p * 0.42), cancellationToken)
+            Report("Choosing mirror and downloading .msixvc", 0.18);
+            await EnsureMsixvcPresentAsync(entry, cachedMsixvc, p => Report("Downloading .msixvc", 0.18 + p * 0.42), cancellationToken)
                 .ConfigureAwait(false);
 
-            Report("A preparar cópia de trabalho do pacote", 0.62);
+            Report("Preparing working copy of package", 0.62);
             await Task.Run(() => File.Copy(cachedMsixvc, workMsixvc, overwrite: true), cancellationToken).ConfigureAwait(false);
 
             try
             {
-                Report("A desencriptar pacote (CIK)", 0.66);
-                UiLog("CIK: a tentar desencriptar .msixvc com as chaves CIK disponíveis (várias tentativas possíveis).");
+                Report("Decrypting package (CIK)", 0.66);
+                UiLog("CIK: decrypting .msixvc with available CIK keys (trying each key).");
                 await _xvdToolService.DecryptMsixvcInPlaceAsync(xvdtool, workMsixvc, cancellationToken).ConfigureAwait(false);
-                UiLog("CIK: desencriptação concluída com sucesso.");
+                UiLog("CIK: decryption finished successfully.");
 
                 var gameDir = OrionPaths.InstanceGame(instanceFolderName);
                 if (Directory.Exists(gameDir))
@@ -183,10 +183,10 @@ public sealed class InstallationService : IInstallationService
 
                 await _fileSystem.EnsureDirectoryAsync(gameDir, cancellationToken).ConfigureAwait(false);
 
-                Report("A extrair ficheiros do jogo", 0.72);
-                UiLog($"Extração: a extrair conteúdo para {gameDir}");
+                Report("Extracting game files", 0.72);
+                UiLog($"Extracting package contents to {gameDir}");
                 await _xvdToolService.ExtractMsixvcAsync(xvdtool, workMsixvc, gameDir, cancellationToken).ConfigureAwait(false);
-                UiLog("Extração do pacote concluída.");
+                UiLog("Package extraction finished.");
             }
             finally
             {
@@ -199,17 +199,17 @@ public sealed class InstallationService : IInstallationService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogDebug(ex, "Não foi possível apagar ficheiro temporário {Path}", workMsixvc);
+                    _logger.LogDebug(ex, "Could not delete temporary file {Path}", workMsixvc);
                 }
             }
         }
 
-        Report("A localizar Minecraft.Windows.exe", 0.88);
+        Report("Locating Minecraft.Windows.exe", 0.88);
         var exe = BedrockGameLayout.FindWindowsExecutable(OrionPaths.InstanceGame(instanceFolderName));
         if (string.IsNullOrEmpty(exe))
         {
             throw new InvalidOperationException(
-                "Extração concluída mas Minecraft.Windows.exe não foi encontrado na pasta do jogo.");
+                "Extraction finished but Minecraft.Windows.exe was not found in the game folder.");
         }
 
         await _vcRuntimeService.EnsureForGameAsync(OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
@@ -225,23 +225,21 @@ public sealed class InstallationService : IInstallationService
 
         if (modsEnabled)
         {
-            _eventBus.Publish(new InstallationExtrasStep("Mods ativos: hooks extra continuam mock."));
+            _eventBus.Publish(new InstallationExtrasStep("Mods enabled: extra hooks remain mock."));
             await Task.Delay(150, cancellationToken).ConfigureAwait(false);
         }
 
         if (installLeviLamina && !string.IsNullOrWhiteSpace(config.LeviLaminaVersion))
         {
-            Report("A instalar LeviLamina via LIP", 0.94);
+            Report("Installing LeviLamina via LIP", 0.94);
             await InstallLeviLaminaAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
-            Report("LeviLamina instalado e validado", 0.98);
+            Report("LeviLamina installed and verified", 0.98);
         }
 
-        Report("Concluído", 1);
+        Report("Done", 1);
         _eventBus.Publish(new InstancesChanged());
-        _logger.LogInformation("Instância {Folder} instalada ({Version}, exe={Exe})", instanceFolderName, gameVersion, exe);
+        _logger.LogInformation("Instance {Folder} installed ({Version}, exe={Exe})", instanceFolderName, gameVersion, exe);
     }
-
-    
 
     private async Task EnsureMsixvcPresentAsync(
         BedrockVersionEntry entry,
@@ -250,7 +248,7 @@ public sealed class InstallationService : IInstallationService
         CancellationToken cancellationToken)
     {
         var mirror = await PickFastestMirrorAsync(entry.Urls, cancellationToken).ConfigureAwait(false);
-        UiLog($"Mirror de download seleccionado: {mirror}");
+        UiLog($"Download mirror selected: {mirror}");
         var uri = new Uri(mirror);
         var expected = await _downloadService.TryGetContentLengthAsync(uri, cancellationToken).ConfigureAwait(false);
         if (expected is > 0 && File.Exists(destinationPath))
@@ -258,14 +256,14 @@ public sealed class InstallationService : IInstallationService
             var len = new FileInfo(destinationPath).Length;
             if (len == expected.Value)
             {
-                _logger.LogInformation("A reutilizar .msixvc em cache: {Path}", destinationPath);
-                UiLog($"Pacote .msixvc já existe em cache com o tamanho esperado ({len} bytes). A saltar download.");
+                _logger.LogInformation("Reusing cached .msixvc: {Path}", destinationPath);
+                UiLog($".msixvc already in cache with expected size ({len} bytes). Skipping download.");
                 downloadProgress(1);
                 return;
             }
         }
 
-        UiLog("A iniciar download do ficheiro .msixvc…");
+        UiLog("Starting .msixvc download…");
         var lastLogged = -0.11;
         await _downloadService
             .DownloadToFileAsync(
@@ -277,19 +275,19 @@ public sealed class InstallationService : IInstallationService
                     if (p >= 1 || p - lastLogged >= 0.10)
                     {
                         lastLogged = p >= 1 ? 1 : Math.Floor(p / 0.10) * 0.10;
-                        UiLog($"Progresso do download .msixvc: {(p * 100):F0}%");
+                        UiLog($".msixvc download progress: {(p * 100):F0}%");
                     }
                 }),
                 cancellationToken)
             .ConfigureAwait(false);
-        UiLog("Download do .msixvc concluído.");
+        UiLog(".msixvc download finished.");
     }
 
     private async Task<string> PickFastestMirrorAsync(IReadOnlyList<string> urls, CancellationToken cancellationToken)
     {
         if (urls.Count == 0)
         {
-            throw new InvalidOperationException("A versão escolhida não tem URLs de download.");
+            throw new InvalidOperationException("The selected version has no download URLs.");
         }
 
         string? bestUrl = null;
@@ -315,7 +313,7 @@ public sealed class InstallationService : IInstallationService
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "Mirror HEAD falhou: {Url}", url);
+                _logger.LogDebug(ex, "Mirror HEAD failed: {Url}", url);
             }
         }
 
@@ -330,7 +328,7 @@ public sealed class InstallationService : IInstallationService
         var requestedVersion = config.LeviLaminaVersion?.Trim();
         if (string.IsNullOrWhiteSpace(requestedVersion))
         {
-            throw new InvalidOperationException("LeviLamina está habilitado, mas nenhuma versão foi definida.");
+            throw new InvalidOperationException("LeviLamina is enabled but no version was set.");
         }
 
         var packageRef = $"{LeviLaminaPackageBase}@{requestedVersion}";
@@ -347,19 +345,19 @@ public sealed class InstallationService : IInstallationService
         }
         else
         {
-            throw new PlatformNotSupportedException("Instalação LeviLamina só está implementada para Linux e Windows.");
+            throw new PlatformNotSupportedException("LeviLamina installation is only implemented for Linux and Windows.");
         }
 
         if (!success)
         {
-            throw new InvalidOperationException("Falha ao instalar/atualizar LeviLamina via LIP.");
+            throw new InvalidOperationException("Failed to install or update LeviLamina via LIP.");
         }
 
         var leviArtifactsDir = Path.Combine(gameDir, "mods", "LeviLamina");
         if (!Directory.Exists(leviArtifactsDir))
         {
             throw new InvalidOperationException(
-                $"LIP terminou sem erro, mas artefato esperado não foi encontrado: {leviArtifactsDir}");
+                $"LIP exited successfully but expected artifact was not found: {leviArtifactsDir}");
         }
     }
 
@@ -373,24 +371,24 @@ public sealed class InstallationService : IInstallationService
         var customLipCommand = Environment.GetEnvironmentVariable("ORION_LIP_COMMAND")?.Trim();
         if (!string.IsNullOrWhiteSpace(customLipCommand))
         {
-            _logger.LogInformation("Usando ORION_LIP_COMMAND no fluxo Linux.");
+            _logger.LogInformation("Using ORION_LIP_COMMAND for Linux flow.");
             return await InstallLeviLaminaUsingNativeLipCommandAsync(gameDir, customLipCommand, packageRef, timeout, cancellationToken)
                 .ConfigureAwait(false);
         }
 
         if (string.IsNullOrWhiteSpace(config.LinuxUmuRunPath) || !File.Exists(config.LinuxUmuRunPath))
         {
-            throw new InvalidOperationException("umu-run não configurado para instalação LeviLamina no Linux.");
+            throw new InvalidOperationException("umu-run is not configured for LeviLamina installation on Linux.");
         }
 
         if (string.IsNullOrWhiteSpace(config.LinuxProtonPath) || !Directory.Exists(config.LinuxProtonPath))
         {
-            throw new InvalidOperationException("PROTONPATH não configurado para instalação LeviLamina no Linux.");
+            throw new InvalidOperationException("PROTONPATH is not configured for LeviLamina installation on Linux.");
         }
 
         if (string.IsNullOrWhiteSpace(config.LinuxWinePrefixPath))
         {
-            throw new InvalidOperationException("WINEPREFIX da instância não configurado.");
+            throw new InvalidOperationException("Instance WINEPREFIX is not configured.");
         }
 
         await _fileSystem.EnsureDirectoryAsync(config.LinuxWinePrefixPath, cancellationToken).ConfigureAwait(false);
@@ -430,7 +428,7 @@ public sealed class InstallationService : IInstallationService
             return true;
         }
 
-        _logger.LogInformation("lip install falhou com código {Code}, tentando update.", installExit);
+        _logger.LogInformation("lip install failed with code {Code}, trying update.", installExit);
         var updateExit = await RunProcessAsync(
                 config.LinuxUmuRunPath,
                 ["cmd.exe", "/c", "orion-lip-update.cmd"],
@@ -478,7 +476,7 @@ public sealed class InstallationService : IInstallationService
             return true;
         }
 
-        _logger.LogInformation("lip install (nativo) falhou com código {Code}, tentando update.", installExit);
+        _logger.LogInformation("lip install (native) failed with code {Code}, trying update.", installExit);
         var updateExit = await RunProcessAsync(
                 shell,
                 [executeArg, $"{lipCommand} update {packageRef}"],
@@ -519,14 +517,14 @@ public sealed class InstallationService : IInstallationService
         var latest = doc.RootElement.GetProperty("dist-tags").GetProperty("latest").GetString();
         if (string.IsNullOrWhiteSpace(latest))
         {
-            throw new InvalidOperationException("Não foi possível resolver versão latest do pacote @futrime/lip.");
+            throw new InvalidOperationException("Could not resolve latest version for package @futrime/lip.");
         }
 
         var tarball = doc.RootElement.GetProperty("versions").GetProperty(latest).GetProperty("dist").GetProperty("tarball")
             .GetString();
         if (string.IsNullOrWhiteSpace(tarball))
         {
-            throw new InvalidOperationException("Não foi possível resolver URL do tarball do LIP.");
+            throw new InvalidOperationException("Could not resolve LIP tarball URL.");
         }
 
         using var archiveResponse = await http.GetAsync(tarball, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -570,7 +568,7 @@ public sealed class InstallationService : IInstallationService
             return;
         }
 
-        throw new InvalidOperationException("Arquivo lip.exe/lipd.exe não encontrado no pacote @futrime/lip.");
+        throw new InvalidOperationException("lip.exe/lipd.exe not found in @futrime/lip package.");
     }
 
     private async Task<string> EnsureLinuxWineDotNetRuntimeAsync(string winePrefixPath, CancellationToken cancellationToken)
@@ -606,7 +604,7 @@ public sealed class InstallationService : IInstallationService
         ZipFile.ExtractToDirectory(zipPath, runtimeRoot, overwriteFiles: true);
         if (!HasDotNetRuntime10(runtimeRoot))
         {
-            throw new InvalidOperationException("Falha ao preparar .NET Runtime 10 (win-x64) para o WINEPREFIX.");
+            throw new InvalidOperationException("Failed to prepare .NET Runtime 10 (win-x64) for WINEPREFIX.");
         }
 
         return runtimeRoot;
@@ -701,10 +699,9 @@ public sealed class InstallationService : IInstallationService
             }
             catch
             {
-                // no-op
             }
 
-            throw new TimeoutException($"Processo {fileName} excedeu o timeout de {timeout.TotalSeconds:F0}s.");
+            throw new TimeoutException($"Process {fileName} exceeded timeout of {timeout.TotalSeconds:F0}s.");
         }
 
         var stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
@@ -719,7 +716,7 @@ public sealed class InstallationService : IInstallationService
             _logger.LogInformation("{File} stderr: {Output}", fileName, stderr.Trim());
         }
 
-        UiLog($"{Path.GetFileName(fileName)} terminou com código {process.ExitCode}.");
+        UiLog($"{Path.GetFileName(fileName)} exited with code {process.ExitCode}.");
         var merged = string.Join("\n", new[] { stdout, stderr }.Where(s => !string.IsNullOrWhiteSpace(s)));
         if (!string.IsNullOrWhiteSpace(merged))
         {
@@ -730,7 +727,7 @@ public sealed class InstallationService : IInstallationService
                 t = t[..maxUiProcessChars] + "…";
             }
 
-            UiLog($"Saída do processo ({Path.GetFileName(fileName)}):\n{t}");
+            UiLog($"Process output ({Path.GetFileName(fileName)}):\n{t}");
         }
 
         return process.ExitCode;

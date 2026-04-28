@@ -106,10 +106,6 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         Dispatcher.UIThread.Post(DrainInstallLogQueue, DispatcherPriority.Background);
     }
 
-    /// <summary>
-    /// Drena a fila na thread de UI em lotes (uma ou poucas atualizações de propriedade por rajada),
-    /// evitando milhares de <see cref="Dispatcher.UIThread.Post"/> e concatenações O(n²) no TextBox.
-    /// </summary>
     private void DrainInstallLogQueue()
     {
         Interlocked.Exchange(ref _installLogDrainScheduled, 0);
@@ -121,8 +117,8 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
             {
                 var prefix = line.Severity switch
                 {
-                    InstallationLogSeverity.Error => "[ERRO] ",
-                    InstallationLogSeverity.Warning => "[AVISO] ",
+                    InstallationLogSeverity.Error => "[ERROR] ",
+                    InstallationLogSeverity.Warning => "[WARNING] ",
                     _ => string.Empty,
                 };
                 sb.Append($"{DateTime.Now:HH:mm:ss} {prefix}{line.Message}\n");
@@ -163,7 +159,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
             return text;
         }
 
-        const string head = "… [início do registo omitido]\n\n";
+        const string head = "… [earlier log omitted]\n\n";
         var budget = maxChars - head.Length;
         if (budget <= 0)
         {
@@ -203,7 +199,6 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         }
         catch
         {
-            // Rede indisponível: utilizador pode tentar novamente ao reabrir o ecrã.
         }
         finally
         {
@@ -247,10 +242,10 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                InstallLogText += $"{DateTime.Now:HH:mm:ss} [ERRO] {ex.Message}\n";
+                InstallLogText += $"{DateTime.Now:HH:mm:ss} [ERROR] {ex.Message}\n";
                 if (ex.InnerException is not null)
                 {
-                    InstallLogText += $"{DateTime.Now:HH:mm:ss} [ERRO] Detalhe: {ex.InnerException.Message}\n";
+                    InstallLogText += $"{DateTime.Now:HH:mm:ss} [ERROR] Inner: {ex.InnerException.Message}\n";
                 }
             });
         }

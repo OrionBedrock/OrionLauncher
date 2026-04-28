@@ -7,7 +7,6 @@ public enum InstallationLogSeverity
     Error,
 }
 
-/// <summary>Linha de registo textual da instalação (ecrã de nova instância).</summary>
 public sealed record InstallationLogLine(string Message, InstallationLogSeverity Severity = InstallationLogSeverity.Info);
 
 public sealed record InstallationProgressChanged(string Step, double Progress01);
