@@ -10,6 +10,10 @@
 - Added automatic copy of `SystemFiles/system32/combase.dll` into the game executable directory at instance creation time.
 - Added automatic `options.txt` patching on launch to enforce:
   - `do_not_show_multiplayer_online_safety_warning:1`
+- Added first-run dependency verification:
+  - runs once on first launcher startup
+  - checks required runtime commands/assets used by install/launch flows
+  - records a marker file after execution
 
 ### Changed
 - Improved Linux launch safety:
@@ -19,7 +23,11 @@
   - Play button now shows `Launching...`
   - launch controls are disabled while launch is being started
 - Improved Linux runtime setup for newer Bedrock builds by attempting `GameInputRedist.msi` installation in the Wine prefix.
+- Added startup dependency warning UI:
+  - shows a dependency report dialog when missing items are detected on first run
+  - keeps startup non-blocking even if the check fails unexpectedly
 
 ### Technical
 - Added `Tmds.DBus.Protocol` explicit dependency override to a fixed secure version.
 - Added `SystemFiles/**` to launcher output copy rules for runtime availability.
+- Added `IStartupDependencyCheckService` with first-launch marker persistence under `~/OrionBE`.

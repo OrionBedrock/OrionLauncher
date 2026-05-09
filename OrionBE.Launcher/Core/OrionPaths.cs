@@ -45,4 +45,8 @@ public static class OrionPaths
     /// <summary>Optional screenshots path relative to repository / deployment (see requirements).</summary>
     public static string DocsPrintsDirectory =>
         Path.Combine(AppContext.BaseDirectory, "docs", "prints");
+
+    /// <summary>Marker file indicating first-launch dependency check has already run.</summary>
+    public static string FirstLaunchDependencyCheckMarker =>
+        Path.Combine(Root, "first_launch_dependency_check_done.json");
 }

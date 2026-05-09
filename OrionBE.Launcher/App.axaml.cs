@@ -43,9 +43,36 @@ public partial class App : Application
 
             desktop.MainWindow = mainWindow;
             desktop.Exit += (_, _) => _shutdownCts.Cancel();
+
+            _ = RunFirstLaunchDependencyCheckAsync(_serviceProvider, uiDialogs);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static async Task RunFirstLaunchDependencyCheckAsync(
+        ServiceProvider serviceProvider,
+        IUiDialogService uiDialogs)
+    {
+        try
+        {
+            var checker = serviceProvider.GetRequiredService<IStartupDependencyCheckService>();
+            var report = await checker.RunIfFirstLaunchAsync().ConfigureAwait(true);
+            if (!report.IsFirstLaunch || !report.HasMissingItems)
+            {
+                return;
+            }
+
+            var message =
+                "The launcher detected missing runtime dependencies during first startup.\n\n" +
+                string.Join('\n', report.MissingItems.Select(static item => $"- {item}")) +
+                "\n\nPlease install the missing dependencies and restart OrionBE Launcher.";
+            await uiDialogs.ShowMessageAsync("Dependency check", message).ConfigureAwait(true);
+        }
+        catch
+        {
+            // Dependency check must never block launcher startup.
+        }
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
