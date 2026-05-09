@@ -19,6 +19,7 @@ public sealed class InstallationService : IInstallationService
     private const string DotNetRuntimeZipUrl =
         "https://dotnetcli.azureedge.net/dotnet/Runtime/10.0.5/dotnet-runtime-10.0.5-win-x64.zip";
     private const int DefaultLipTimeoutSeconds = 180;
+    private const string CombaseRelativePath = "SystemFiles/system32/combase.dll";
 
     private readonly IInstanceService _instanceService;
     private readonly IFileSystemService _fileSystem;
@@ -29,6 +30,7 @@ public sealed class InstallationService : IInstallationService
     private readonly IBedrockVersionCatalogService _bedrockCatalog;
     private readonly IXvdToolService _xvdToolService;
     private readonly IVcRuntimeService _vcRuntimeService;
+    private readonly IBedrockOnlineBootstrapService _bedrockOnlineBootstrap;
     private readonly ILogger<InstallationService> _logger;
 
     public InstallationService(
@@ -41,6 +43,7 @@ public sealed class InstallationService : IInstallationService
         IBedrockVersionCatalogService bedrockCatalog,
         IXvdToolService xvdToolService,
         IVcRuntimeService vcRuntimeService,
+        IBedrockOnlineBootstrapService bedrockOnlineBootstrap,
         ILogger<InstallationService> logger)
     {
         _instanceService = instanceService;
@@ -52,6 +55,7 @@ public sealed class InstallationService : IInstallationService
         _bedrockCatalog = bedrockCatalog;
         _xvdToolService = xvdToolService;
         _vcRuntimeService = vcRuntimeService;
+        _bedrockOnlineBootstrap = bedrockOnlineBootstrap;
         _logger = logger;
     }
 
@@ -214,13 +218,37 @@ public sealed class InstallationService : IInstallationService
 
         await _vcRuntimeService.EnsureForGameAsync(OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
             .ConfigureAwait(false);
-
-        config.BedrockWindowsExecutablePath = exe;
-        config.LinuxWinePrefixPath = Path.Combine(OrionPaths.InstanceRoot(instanceFolderName), "wineprefix");
-        await _fileSystem.EnsureDirectoryAsync(config.LinuxWinePrefixPath, cancellationToken).ConfigureAwait(false);
-        await _fileSystem.EnsureDirectoryAsync(Path.Combine(config.LinuxWinePrefixPath, "dosdevices"), cancellationToken)
+        Report("Copying combase.dll to game executable folder", 0.862);
+        await EnsureCombaseDllForGameAsync(OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
             .ConfigureAwait(false);
 
+        var winePrefixPath = Path.Combine(OrionPaths.InstanceRoot(instanceFolderName), "wineprefix");
+        await _fileSystem.EnsureDirectoryAsync(winePrefixPath, cancellationToken).ConfigureAwait(false);
+        await _fileSystem.EnsureDirectoryAsync(Path.Combine(winePrefixPath, "dosdevices"), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (OperatingSystem.IsLinux())
+        {
+            Report("Game Input API (Wine; recomendado 26.x GDK no Linux)", 0.865);
+            await TryInstallGameInputRedistOnLinuxAsync(
+                    OrionPaths.InstanceGame(instanceFolderName),
+                    winePrefixPath,
+                    config,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        Report("HTTPS / multijogador: cacert + Xcurl (layout mcbe-on-linux)", 0.875);
+        await _bedrockOnlineBootstrap
+            .EnsureOnlineSupportFilesAsync(
+                OrionPaths.InstanceGame(instanceFolderName),
+                exe,
+                msg => UiLog(msg),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        config.BedrockWindowsExecutablePath = exe;
+        config.LinuxWinePrefixPath = winePrefixPath;
         await _instanceService.SaveConfigAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
 
         if (modsEnabled)
@@ -636,6 +664,61 @@ public sealed class InstallationService : IInstallationService
         return $"Z:{normalized}";
     }
 
+    private async Task EnsureCombaseDllForGameAsync(string gameRoot, string exePath, CancellationToken cancellationToken)
+    {
+        var source = ResolveCombaseDllSourcePath();
+        if (source is null)
+        {
+            throw new InvalidOperationException(
+                $"Required file not found: {CombaseRelativePath}. Include this file in launcher output.");
+        }
+
+        var exeDir = Path.GetDirectoryName(exePath);
+        if (string.IsNullOrWhiteSpace(exeDir))
+        {
+            throw new InvalidOperationException("Invalid game executable path while copying combase.dll.");
+        }
+
+        var destination = Path.Combine(exeDir, "combase.dll");
+        await _fileSystem.EnsureDirectoryAsync(exeDir, cancellationToken).ConfigureAwait(false);
+        await Task.Run(() => File.Copy(source, destination, overwrite: true), cancellationToken).ConfigureAwait(false);
+        UiLog($"combase.dll copied to game exe directory: {destination}");
+
+        var gameRootDestination = Path.Combine(gameRoot, "combase.dll");
+        if (!string.Equals(destination, gameRootDestination, StringComparison.OrdinalIgnoreCase))
+        {
+            await Task.Run(() => File.Copy(source, gameRootDestination, overwrite: true), cancellationToken).ConfigureAwait(false);
+            UiLog($"combase.dll copied to game root: {gameRootDestination}");
+        }
+    }
+
+    private static string? ResolveCombaseDllSourcePath()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, CombaseRelativePath),
+            Path.Combine(Environment.CurrentDirectory, CombaseRelativePath),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", CombaseRelativePath),
+        };
+
+        foreach (var candidate in candidates)
+        {
+            try
+            {
+                var full = Path.GetFullPath(candidate);
+                if (File.Exists(full))
+                {
+                    return full;
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        return null;
+    }
+
     private static TimeSpan ResolveLipTimeout()
     {
         var raw = Environment.GetEnvironmentVariable("ORION_LIP_TIMEOUT_SECONDS");
@@ -731,6 +814,86 @@ public sealed class InstallationService : IInstallationService
         }
 
         return process.ExitCode;
+    }
+
+    private async Task TryInstallGameInputRedistOnLinuxAsync(
+        string gameDir,
+        string winePrefixPath,
+        InstanceConfig config,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(config.LinuxUmuRunPath) || !File.Exists(config.LinuxUmuRunPath))
+        {
+            UiLog("GameInput MSI: ignorado (umu-run indisponível).");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(config.LinuxProtonPath) || !Directory.Exists(config.LinuxProtonPath))
+        {
+            UiLog("GameInput MSI: ignorado (GDK Proton não configurado).");
+            return;
+        }
+
+        var msi = FindGameInputRedistMsi(gameDir);
+        if (msi is null)
+        {
+            UiLog("GameInputRedist.msi não encontrado no pacote (normal em versões mais antigas).");
+            return;
+        }
+
+        UiLog($"Instalando GameInputRedist no prefixo Wine (26.x GDK): {msi}");
+        var wineMsi = ToWineWindowsPath(msi);
+        var env = new Dictionary<string, string?>
+        {
+            ["PROTONPATH"] = config.LinuxProtonPath,
+            ["WINEPREFIX"] = winePrefixPath,
+        };
+
+        try
+        {
+            var exit = await RunProcessAsync(
+                    config.LinuxUmuRunPath,
+                    ["msiexec", "/i", wineMsi, "/qn"],
+                    gameDir,
+                    env,
+                    TimeSpan.FromMinutes(4),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            if (exit != 0)
+            {
+                _logger.LogWarning("GameInputRedist.msi msiexec exit code {Code}", exit);
+                UiLog(
+                    $"Aviso: GameInput MSI terminou com código {exit}. Se o jogo não abrir, instale manualmente no prefixo Wine.");
+            }
+            else
+            {
+                UiLog("GameInputRedist instalado no prefixo Wine.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "GameInputRedist MSI installation failed.");
+            UiLog($"Aviso: falha ao instalar GameInput MSI: {ex.Message}");
+        }
+    }
+
+    private static string? FindGameInputRedistMsi(string gameRoot)
+    {
+        var direct = Path.Combine(gameRoot, "Content", "Installers", "GameInputRedist.msi");
+        if (File.Exists(direct))
+        {
+            return direct;
+        }
+
+        try
+        {
+            return Directory.EnumerateFiles(gameRoot, "GameInputRedist.msi", SearchOption.AllDirectories).FirstOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void UiLog(string message, InstallationLogSeverity severity = InstallationLogSeverity.Info)

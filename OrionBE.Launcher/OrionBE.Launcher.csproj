@@ -19,6 +19,9 @@
     <ItemGroup>
         <Folder Include="Models\"/>
         <AvaloniaResource Include="Assets\**"/>
+        <None Include="SystemFiles\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
@@ -36,5 +39,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0"/>
+        <!-- Avalonia Linux → transitivo vulnerável 0.21.2; força correção GHSA-xrw6-gwf8-vvr9 -->
+        <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3"/>
     </ItemGroup>
 </Project>

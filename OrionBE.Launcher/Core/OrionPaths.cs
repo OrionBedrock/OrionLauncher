@@ -21,6 +21,9 @@ public static class OrionPaths
     /// <summary>Shared encrypted <c>.msixvc</c> downloads (one file per game version string).</summary>
     public static string BedrockMsixvcCacheDir => Path.Combine(Cache, "bedrock_msixvc");
 
+    /// <summary>cacert.pem + curl zip cache for Bedrock HTTPS/bootstrap (Xcurl.dll).</summary>
+    public static string BedrockOnlineSupportCacheDir => Path.Combine(Cache, "bedrock_online_support");
+
     public static string InstanceRoot(string instanceFolderName) =>
         Path.Combine(Instances, instanceFolderName);
 

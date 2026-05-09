@@ -44,6 +44,7 @@ public static class AppBootstrapper
         services.AddSingleton<IVcRuntimeService, VcRuntimeService>();
         services.AddSingleton<IXvdToolService, XvdToolService>();
         services.AddSingleton<IGdkLinuxRuntimeService, GdkLinuxRuntimeService>();
+        services.AddSingleton<IBedrockOnlineBootstrapService, BedrockOnlineBootstrapService>();
         services.AddSingleton<IInstallationService, InstallationService>();
         services.AddSingleton<IGameLaunchService, GameLaunchService>();
         services.AddSingleton<IFileExplorerService, FileExplorerService>();
