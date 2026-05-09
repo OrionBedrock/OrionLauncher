@@ -41,19 +41,50 @@ public sealed partial class InstanceCardViewModel : ViewModelBase
         ? "Runtime: none"
         : $"Runtime: LeviLamina {LeviLaminaVersion}";
 
-    [RelayCommand]
+    [ObservableProperty]
+    private bool isLaunching;
+
+    public bool IsLaunchControlsEnabled => !IsLaunching;
+    public string PlayButtonText => IsLaunching ? "Launching..." : "Play";
+
+    [RelayCommand(CanExecute = nameof(CanPlay))]
     private async Task PlayAsync()
     {
+        if (IsLaunching)
+        {
+            return;
+        }
+
+        IsLaunching = true;
         try
         {
+            if (_gameLaunchService.IsInstanceRunning(FolderName))
+            {
+                await _uiDialogService.ShowMessageAsync("OrionBE", "This instance is already running.").ConfigureAwait(false);
+                return;
+            }
+
             await _gameLaunchService.LaunchInstanceAsync(FolderName).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             await _uiDialogService.ShowMessageAsync("OrionBE", ex.Message).ConfigureAwait(false);
         }
+        finally
+        {
+            IsLaunching = false;
+        }
     }
 
     [RelayCommand]
     private void OpenSettings() => _navigation.PushInstanceSettings(FolderName);
+
+    private bool CanPlay() => !IsLaunching;
+
+    partial void OnIsLaunchingChanged(bool value)
+    {
+        PlayCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(IsLaunchControlsEnabled));
+        OnPropertyChanged(nameof(PlayButtonText));
+    }
 }
