@@ -20,3 +20,6 @@ requisitos.txt
 # OS
 .DS_Store
 Thumbs.db
+
+#Dev files
+/OrionBE.Launcher.Tests/
