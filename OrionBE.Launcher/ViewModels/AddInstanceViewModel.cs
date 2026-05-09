@@ -91,6 +91,15 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private string _installLogText = string.Empty;
 
+    [ObservableProperty]
+    private bool _enableGnomeCompatibilityProfile = IsLikelyGnomeSession();
+
+    [ObservableProperty]
+    private bool _useX11Fallback = IsLikelyGnomeSession();
+
+    [ObservableProperty]
+    private bool _collectLaunchDiagnostics = true;
+
     partial void OnInstanceNameChanged(string value) => CreateCommand.NotifyCanExecuteChanged();
 
     partial void OnInstallLogTextChanged(string value) => CopyInstallLogCommand.NotifyCanExecuteChanged();
@@ -236,6 +245,15 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
                     progress: null)
                 .ConfigureAwait(false);
 
+            var created = await _instanceService.GetAsync(folder).ConfigureAwait(false);
+            if (created is not null)
+            {
+                created.Config.EnableGnomeCompatibilityProfile = EnableGnomeCompatibilityProfile;
+                created.Config.UseX11Fallback = UseX11Fallback;
+                created.Config.CollectLaunchDiagnostics = CollectLaunchDiagnostics;
+                await _instanceService.SaveConfigAsync(folder, created.Config).ConfigureAwait(false);
+            }
+
             _navigationService.GoBack();
         }
         catch (Exception ex)
@@ -322,6 +340,18 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
                 OnPropertyChanged(nameof(LeviSupportStatusText));
             });
         }
+    }
+
+    private static bool IsLikelyGnomeSession()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return false;
+        }
+
+        var desktop = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? string.Empty;
+        return desktop.Contains("GNOME", StringComparison.OrdinalIgnoreCase)
+            || desktop.Contains("ZORIN", StringComparison.OrdinalIgnoreCase);
     }
 
     public void Dispose()

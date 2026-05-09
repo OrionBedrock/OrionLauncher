@@ -19,4 +19,9 @@ public sealed class InstanceConfig
     public string? BedrockWindowsExecutablePath { get; set; }
 
     public string? LeviLaminaVersion { get; set; }
+
+    // Temporary workaround flags (planned for native handling in future versions).
+    public bool EnableGnomeCompatibilityProfile { get; set; }
+    public bool UseX11Fallback { get; set; }
+    public bool CollectLaunchDiagnostics { get; set; }
 }

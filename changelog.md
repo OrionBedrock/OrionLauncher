@@ -14,6 +14,10 @@
   - runs once on first launcher startup
   - checks required runtime commands/assets used by install/launch flows
   - records a marker file after execution
+- Added temporary per-instance Linux compatibility options in instance creation:
+  - `Enable GNOME Compatibility profile (temporary)`
+  - `Use X11 fallback on launch (temporary)`
+  - `Collect launch diagnostics log for issue reports`
 
 ### Changed
 - Improved Linux launch safety:
@@ -26,6 +30,13 @@
 - Added startup dependency warning UI:
   - shows a dependency report dialog when missing items are detected on first run
   - keeps startup non-blocking even if the check fails unexpectedly
+- Improved launch diagnostics for issue triage:
+  - when enabled per instance, launch stdout/stderr are stored under `instances/<instance>/logs/`
+  - intended as temporary evidence collection for GNOME/Zorin minimize/workspace crash reports
+
+### Temporary Notice
+- The GNOME compatibility profile and X11 fallback are temporary test workarounds.
+- If community testing confirms they reduce crash/hang reports, they will be promoted to native defaults in the next version.
 
 ### Technical
 - Added `Tmds.DBus.Protocol` explicit dependency override to a fixed secure version.

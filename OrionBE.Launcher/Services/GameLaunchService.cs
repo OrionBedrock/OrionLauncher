@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using OrionBE.Launcher.Core;
 
@@ -127,7 +128,17 @@ public sealed class GameLaunchService : IGameLaunchService
                 psi.Environment["WINEPREFIX"] = summary.Config.LinuxWinePrefixPath!;
             }
 
-            Process.Start(psi);
+            ApplyLinuxCompatibilityEnvironment(summary.Config, psi);
+            if (summary.Config.CollectLaunchDiagnostics)
+            {
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+            }
+            var process = Process.Start(psi);
+            if (process is not null && summary.Config.CollectLaunchDiagnostics)
+            {
+                _ = StartLaunchDiagnosticsCaptureAsync(instanceFolderName, process);
+            }
             _logger.LogInformation("Game started via umu-run: {Exe}", exe);
             return;
         }
@@ -225,5 +236,69 @@ public sealed class GameLaunchService : IGameLaunchService
         }
 
         return false;
+    }
+
+    private void ApplyLinuxCompatibilityEnvironment(Models.InstanceConfig config, ProcessStartInfo psi)
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        if (config.EnableGnomeCompatibilityProfile)
+        {
+            // Temporary profile while collecting evidence for GNOME/Zorin focus/minimize issues.
+            psi.Environment["WINE_FULLSCREEN_PAUSE_ON_FOCUS_LOSS"] = "0";
+            psi.Environment["PROTON_LOG"] = "1";
+            psi.Environment["PROTON_LOG_DIR"] = OrionPaths.Root;
+        }
+
+        if (config.UseX11Fallback)
+        {
+            // Best-effort X11 forcing for session/compositor compatibility testing.
+            psi.Environment["PROTON_ENABLE_WAYLAND"] = "0";
+            psi.Environment["SDL_VIDEODRIVER"] = "x11";
+            psi.Environment["GDK_BACKEND"] = "x11";
+        }
+    }
+
+    private async Task StartLaunchDiagnosticsCaptureAsync(string instanceFolderName, Process process)
+    {
+        try
+        {
+            var logsDir = Path.Combine(OrionPaths.InstanceRoot(instanceFolderName), "logs");
+            Directory.CreateDirectory(logsDir);
+            var logPath = Path.Combine(logsDir, $"launch-{DateTime.UtcNow:yyyyMMdd-HHmmss}.log");
+            await using var output = new FileStream(logPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+            await using var writer = new StreamWriter(output, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            await writer.WriteLineAsync($"[orion] launch diagnostics started at {DateTime.UtcNow:O}");
+            await writer.WriteLineAsync($"[orion] pid={process.Id}");
+            await writer.FlushAsync();
+
+            var outTask = process.StandardOutput.ReadToEndAsync();
+            var errTask = process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync().ConfigureAwait(false);
+            var stdout = await outTask.ConfigureAwait(false);
+            var stderr = await errTask.ConfigureAwait(false);
+
+            if (!string.IsNullOrWhiteSpace(stdout))
+            {
+                await writer.WriteLineAsync("[stdout]");
+                await writer.WriteLineAsync(stdout.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(stderr))
+            {
+                await writer.WriteLineAsync("[stderr]");
+                await writer.WriteLineAsync(stderr.Trim());
+            }
+
+            await writer.WriteLineAsync($"[orion] exit_code={process.ExitCode}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Launch diagnostics capture failed.");
+        }
     }
 }
