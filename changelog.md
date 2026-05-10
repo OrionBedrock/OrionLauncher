@@ -1,5 +1,33 @@
 # OrionBE Launcher - Changelog
 
+## 0.4.0
+
+**Primary focus:** reformulated **visual interface** (sidebar, hub hero, profile).
+
+### Added
+
+* **Multi-language support:** runtime UI language with JSON catalogs (**English** `en-US`, **Portuguese Brazil** `pt-BR`), loaded from `I18n/*.json` next to the executable (with embedded fallback); strings cover shell, launcher views, dialogs, and Hub news paths per locale.
+* **Hub:** wallpaper hero with **OrionBE logo** centered at the top (`Assets/logo.png`).
+* **GitHub shortcut:** toolbar button (top-right) opens the project repository at `https://github.com/OrionBedrock/OrionLauncher`.
+* **Existing instances — Bedrock updates:** from **Instance settings**, update an already-installed instance to the **latest build in the same channel** (`release` vs `preview`) when the catalog offers a newer package; respects channel boundaries and refreshes game files (mods re-applied when mods are enabled).
+* **Local profile:** nickname, optional tagline under the nickname (length limits in the editor), and **custom avatar** stored under `~/OrionBE/cache`; dedicated **Profile** screen (pick/remove photo, save, back).
+* **In-app news:** `v0.4.0` release notes under `Updates/<locale>/v0.4.0.md` (listed in `versions.json`).
+
+### Removed
+
+* Microsoft / Xbox **MSAL** sign-in and related OAuth-only launcher UI.
+
+### Changed
+
+* Sidebar and profile avatars use **Avalonia `Bitmap`** loaded from disk with **`Stretch.Uniform`** inside rounded clips for consistent rendering on Linux.
+
+### Notes
+
+* **Translation catalogs:** `OrionBE.Launcher/I18n/en-US.json` and `pt-BR.json` are kept **key-aligned** (same flattened keys); files are **embedded** in `OrionBE.Launcher` and **copied** to output, and **linked** into the host app (`OrionBe.csproj`) next to the executable for runtime loads.
+* **Migration (temporary):** the repository is undergoing a **gradual** migration of **file structure** and **code layout**. Some parts may still feel inconsistent until that work finishes—not a reflection of the final architecture.
+
+---
+
 ## 0.3.3
 
 ### Added

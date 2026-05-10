@@ -1,0 +1,217 @@
+{
+  "app": {
+    "window_title": "OrionBE Launcher",
+    "brand": "OrionBE"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "open": "Open",
+    "save": "Save",
+    "back": "Back",
+    "details": "Details",
+    "install": "Install",
+    "delete": "Delete",
+    "name_label": "Name:",
+    "version_label": "Version:",
+    "mods_enabled_label": "Mods enabled:",
+    "folder_label": "Folder:",
+    "package_uuid_label": "Package UUID:",
+    "on": "On",
+    "off": "Off",
+    "not_configured": "(not configured)",
+    "not_installed": "(not installed)",
+    "unknown_version": "unknown"
+  },
+  "profile": {
+    "default_name": "Player",
+    "sidebar_hint": "Click to customize your profile",
+    "sidebar_tooltip": "Edit nickname, message, and profile picture",
+    "editor_title": "Your profile",
+    "pick_photo": "Choose photo…",
+    "pick_photo_title": "Choose profile picture",
+    "remove_photo": "Remove photo",
+    "avatar_hint": "PNG, JPG, WebP or GIF. The file is stored in your OrionBE cache folder.",
+    "nickname_label": "Nickname",
+    "nickname_watermark": "Shown in the sidebar (max 24 characters)",
+    "tagline_label": "Message",
+    "tagline_watermark": "Short line under your nickname (max 120 characters)",
+    "tagline_remaining": "{0} characters left",
+    "save": "Save",
+    "cancel": "Back"
+  },
+  "navbar": {
+    "home": "Hub",
+    "play": "Play",
+    "instances": "Instances",
+    "installations": "Versions",
+    "mods": "Mods",
+    "addons": "Addons",
+    "microsoft": {
+      "account": "Microsoft Profile",
+      "xbox_live": "Xbox Live"
+    }
+  },
+  "sidebar": {
+    "mods_tooltip": "Browse mods"
+  },
+  "titles": {
+    "hub": "Minecraft Bedrock adapted for Linux",
+    "game": "Instances",
+    "mods": "Browse mods",
+    "addons": "Add-ons",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "hub": {
+    "start": "Start exploring",
+    "play": "Play",
+    "launching": "Launching...",
+    "running": "Running",
+    "play_last_instance": "Play last instance",
+    "create_new_instance": "Create new instance",
+    "install_dependencies": "Install dependencies",
+    "news": "News",
+    "news_title": "LATEST UPDATES"
+  },
+  "addons": {
+    "placeholder": "Add-ons will appear here in a future update."
+  },
+  "settings": {
+    "tabs": {
+      "general": "General"
+    },
+    "general": {
+      "language": "LANGUAGE",
+      "launcher": "LAUNCHER",
+      "launcher_keep_the_launcher": "Keep the launcher open when the game is running"
+    }
+  },
+  "launcher": {
+    "home": {
+      "instances": "Instances",
+      "add_instance": "Add instance"
+    },
+    "add_instance": {
+      "title": "Add instance",
+      "instance_name": "Instance name",
+      "watermark_name": "My survival world",
+      "game_version": "Game version",
+      "mode": "Mode",
+      "mode_hint": "Vanilla is default. Enable mods to unlock the mod install pipeline for this instance.",
+      "toggle_mods": "Mods",
+      "toggle_vanilla": "Vanilla",
+      "levi_section": "LeviLamina Loader",
+      "levi_hint": "This game version is compatible with LeviLamina. You can create the instance with or without the loader.",
+      "levi_with": "With LeviLamina",
+      "levi_without": "Without LeviLamina",
+      "levi_support_yes": "LeviLamina support available for this game version.",
+      "levi_support_no": "LeviLamina not available for this game version.",
+      "keep_open_on": "Keep window open when installation succeeds (review logs)",
+      "keep_open_off": "Return home when installation succeeds",
+      "install_log_title": "Installation log",
+      "copy_logs": "Copy logs",
+      "install_log_watermark": "Installation steps appear here while creating an instance.",
+      "status_preparing": "Preparing...",
+      "status_finished": "Installation finished successfully.",
+      "cancel": "Cancel",
+      "create": "Create"
+    },
+    "instance_card": {
+      "mode_modded": "Modded",
+      "mode_vanilla": "Vanilla",
+      "runtime_none": "Runtime: none",
+      "runtime_levi": "Runtime: LeviLamina {0}",
+      "play": "Play",
+      "launching": "Launching...",
+      "running": "Running...",
+      "settings_tooltip": "Settings"
+    },
+    "instance_settings": {
+      "title": "Instance settings",
+      "summary": "Summary",
+      "instance_folder": "Instance folder",
+      "bedrock_update": "Bedrock update",
+      "update_channel_button": "Update to latest in this channel",
+      "linux_gdk": "Linux GDK",
+      "linux_gdk_hint": "Paths saved at install time (raonygamer/umu-launcher, raonygamer/gdk-proton).",
+      "umu_run": "umu-run",
+      "gdk_proton": "GDK Proton (PROTONPATH directory)",
+      "wineprefix": "WINEPREFIX",
+      "bedrock_game": "Bedrock game",
+      "bedrock_game_hint": "Executable and package id (after installation).",
+      "bedrock_exe_label": "Minecraft.Windows.exe",
+      "levi_lamina": "LeviLamina",
+      "levi_hint": "Version installed in this instance (used to validate mod compatibility).",
+      "levi_watermark": "e.g. 1.1.0",
+      "import_mods": "Import local mods",
+      "import_hint": "Import a local .zip or .dll. Online mod browsing will be added later.",
+      "import_path_watermark": "/path/to/mod.zip or .dll",
+      "import_name_watermark": "Optional display name",
+      "import_zip": "Import ZIP",
+      "import_dll": "Import DLL",
+      "installed_mods": "Installed mods",
+      "installed_mods_hint": "Enable or disable; files remain on disk.",
+      "requires_levi": "Requires LeviLamina",
+      "back": "Back",
+      "delete_instance": "Delete instance",
+      "upgrade_hint_newer": "Newer {0} build available: {1}.",
+      "upgrade_hint_none": "No newer build in this channel. Stable does not move to preview (and vice versa); downgrades are not offered.",
+      "upgrade_hint_error": "Could not check the Bedrock catalog for updates.",
+      "channel_preview": "preview",
+      "channel_stable": "stable"
+    },
+    "browse_mods": {
+      "title": "Browse mods"
+    },
+    "mod_details": {
+      "title": "Mod details",
+      "version": "Version",
+      "screenshots": "Screenshots",
+      "screenshots_hint": "Optional images resolved from docs/prints when present next to the published build.",
+      "targets_open": "  (targets ",
+      "targets_close": ") ",
+      "ll_prefix": "LL: "
+    },
+    "instance_picker": {
+      "title": "Select instance",
+      "prompt": "Choose a mod-enabled instance:",
+      "folder_prefix": "Folder:",
+      "version_prefix": "Version:"
+    },
+    "viewlocator": {
+      "unknown_vm": "Unknown ViewModel: {0}",
+      "view_not_found": "View not found: {0}"
+    },
+    "game_version_row": {
+      "v_prefix": "v"
+    }
+  },
+  "dialogs": {
+    "dependency_check_title": "Dependency check",
+    "dependency_check_intro": "The launcher detected missing runtime dependencies during first startup.\n\n",
+    "dependency_check_outro": "\n\nPlease install the missing dependencies and restart OrionBE Launcher.",
+    "delete_instance_title": "Delete instance",
+    "delete_instance_body": "The folder and all files for this instance will be deleted from disk.\n\n“{0}”\nThis cannot be undone. Continue?",
+    "enter_local_path": "Enter a path to a local file.",
+    "select_primary_dll_title": "Select primary DLL",
+    "select_primary_dll_body": "Multiple .dll files were found in this ZIP. Choose the main one used by this mod:",
+    "fix_mod_layout_title": "Fix mod folder layout?",
+    "fix_mod_layout_body": "Current mod structure places .dll files in a nested folder.\n\nCurrent example: {0}\nRecommended: {1}\n\nDo you want OrionBE to normalize this ZIP layout before import?",
+    "instance_updated": "The instance was updated to the latest game files allowed for this channel.",
+    "version_mismatch_title": "Version mismatch",
+    "version_mismatch_body": "The instance is on {0}, but this mod targets {1}. Continue anyway?",
+    "levi_required_title": "LeviLamina required",
+    "levi_required_body": "This mod requires LeviLamina, but the instance does not have a LeviLamina version configured in Instance Settings.",
+    "levi_mismatch_title": "LeviLamina mismatch",
+    "levi_mismatch_body": "Instance LeviLamina={0}, required range={1}. Continue anyway?",
+    "mod_installed_title": "Installed",
+    "mod_installed_body": "The mod was copied into the instance mods folder.",
+    "no_modded_instances_title": "No instances",
+    "no_modded_instances_body": "There are no instances with mods enabled. Enable mods on an instance or create a new mod-enabled instance.",
+    "umu_exit_body": "The GDK launcher wrapper exited with code {0}. If nothing appeared, attach installation logs or Proton/Wine logs when reporting the issue. Verify system dependencies if installation logs showed no errors."
+  },
+  "import": {
+    "default_mod_name": "Imported mod"
+  }
+}

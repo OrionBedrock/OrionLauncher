@@ -1,0 +1,338 @@
+<Styles
+  xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia">
+  <Style Selector="md|MarkdownTextBlock">
+    <Setter Property="Cursor" Value="IBeam"/>
+    <Setter Property="FontFamily" Value="Arial, 'Segoe UI', sans-serif"/>
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeM}"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="SelectionBrush" Value="CornflowerBlue"/>
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource ForegroundColor}"/>
+  </Style>
+
+  <Style Selector="md|CodeBlock">
+    <Setter Property="FontFamily" Value="Consolas, 'Courier New', monospace"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="md:CodeBlock">
+          <StackPanel
+            Orientation="Vertical" Spacing="0">
+            <Border
+              Background="{DynamicResource BorderColor}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1" CornerRadius="4,4,0,0">
+              <DockPanel
+                Margin="4,2" LastChildFill="True">
+                <TextBlock
+                  x:Name="PART_LanguageTextBlock" DockPanel.Dock="Left"
+                  VerticalAlignment="Center"
+                  Text="{TemplateBinding Language}"/>
+
+                <StackPanel
+                  DockPanel.Dock="Right" HorizontalAlignment="Right"
+                  Orientation="Horizontal">
+                  <ToggleButton
+                    x:Name="PART_ToggleTextWrapButton"
+                    Width="{DynamicResource FontSize2Xl}"
+                    Height="{DynamicResource FontSize2Xl}"
+                    Padding="0" CornerRadius="3"
+                    Focusable="False"
+                    IsChecked="{TemplateBinding IsCodeWrapped, Mode=TwoWay}">
+                    <Viewbox
+                      Width="{DynamicResource FontSizeL}"
+                      Height="{DynamicResource FontSizeL}">
+                      <Path
+                        Width="24" Height="24"
+                        Stroke="{TemplateBinding Foreground}"
+                        StrokeThickness="2">
+                        <Path.Data>
+                          <GeometryGroup>
+                            <StreamGeometry>F1 M24,24z M0,0z M16,16L14,18 16,20</StreamGeometry>
+                            <StreamGeometry>F1 M24,24z M0,0z M3,12L18,12A3,3,0,1,1,18,18L14,18</StreamGeometry>
+                            <StreamGeometry>F1 M24,24z M0,0z M3,18L10,18</StreamGeometry>
+                            <StreamGeometry>F1 M24,24z M0,0z M3,6L21,6</StreamGeometry>
+                          </GeometryGroup>
+                        </Path.Data>
+                      </Path>
+                    </Viewbox>
+                  </ToggleButton>
+                  <Button
+                    x:Name="PART_CopyButton"
+                    Width="{DynamicResource FontSize2Xl}"
+                    Height="{DynamicResource FontSize2Xl}"
+                    Padding="0" CornerRadius="3"
+                    Focusable="False">
+                    <Viewbox
+                      Width="{DynamicResource FontSizeL}"
+                      Height="{DynamicResource FontSizeL}">
+                      <Path
+                        Width="24" Height="24"
+                        Stroke="{TemplateBinding Foreground}"
+                        StrokeThickness="2">
+                        <Path.Data>
+                          <GeometryGroup>
+                            <RectangleGeometry
+                              RadiusX="2" RadiusY="2"
+                              Rect="8,8,14,14"/>
+                            <StreamGeometry>F1 M24,24z M0,0z M4,16C2.9,16,2,15.1,2,14L2,4C2,2.9,2.9,2,4,2L14,2C15.1,2,16,2.9,16,4</StreamGeometry>
+                          </GeometryGroup>
+                        </Path.Data>
+                      </Path>
+                    </Viewbox>
+                  </Button>
+                </StackPanel>
+              </DockPanel>
+            </Border>
+
+            <Border
+              Background="{DynamicResource SecondaryCardBackgroundColor}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1,0,1,1" CornerRadius="0,0,4,4">
+              <ScrollViewer
+                x:Name="PART_ScrollViewer"
+                HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                VerticalScrollBarVisibility="Auto">
+                <md:MarkdownTextBlock
+                  x:Name="PART_CodeTextBlock" Margin="4"
+                  FontFamily="{TemplateBinding FontFamily}"
+                  TextWrapping="{TemplateBinding TextWrapping}"/>
+              </ScrollViewer>
+            </Border>
+          </StackPanel>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+
+    <Style Selector="^ /template/ ToggleButton#PART_ToggleTextWrapButton">
+      <Setter Property="ToolTip.Tip" Value="Toggle wrap"/>
+    </Style>
+  </Style>
+
+  <Style Selector="md|MarkdownRenderer">
+    <Setter Property="Focusable" Value="True"/>
+
+    <Style Selector="^ StackPanel">
+      <Setter Property="Spacing" Value="4"/>
+    </Style>
+
+    <Style Selector="^ Span.Emphasis">
+      <Style Selector="^.Bold">
+        <Setter Property="FontWeight" Value="Bold"/>
+      </Style>
+      <Style Selector="^.Italic">
+        <Setter Property="FontStyle" Value="Italic"/>
+      </Style>
+      <Style Selector="^.Strikethrough">
+        <Setter Property="TextDecorations" Value="Strikethrough"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Image.Link">
+      <Setter Property="MaxWidth" Value="800"/>
+      <Setter Property="MaxHeight" Value="600"/>
+    </Style>
+
+    <Style Selector="^ Border.Table">
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="Background" Value="{DynamicResource CardBackgroundColor}"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="Margin" Value="0,8"/>
+      <Setter Property="Padding" Value="8,6"/>
+    </Style>
+
+    <Style Selector="^ Border.TableCell">
+      <Setter Property="Padding" Value="0,3,10,3"/>
+      <Setter Property="BorderThickness" Value="0,0,0,1"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+    </Style>
+
+    <Style Selector="^ Border.TableCell.Header">
+      <Setter Property="BorderThickness" Value="0,0,0,2"/>
+
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="FontWeight" Value="Bold"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ StackPanel.TableCell">
+      <Setter Property="VerticalAlignment" Value="Bottom"/>
+    </Style>
+
+    <Style Selector="^ md|MarkdownListGrid.ListBlock">
+      <Style Selector="^ StackPanel.ListItemBlock">
+        <Setter Property="Spacing" Value="0"/>
+      </Style>
+
+      <Style Selector="^ TextBlock.ListBlockNumber">
+        <Setter Property="FontFamily" Value="Arial, 'Segoe UI', sans-serif"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="Margin" Value="4,0"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+      </Style>
+
+      <Style Selector="^ TextBlock.ListBlockBullet">
+        <Setter Property="FontFamily" Value="Arial, 'Segoe UI', sans-serif"/>
+        <Setter Property="Margin" Value="4,0"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+
+        <Style Selector="^.Level0">
+          <Setter Property="Text" Value="●"/>
+        </Style>
+
+        <Style Selector="^.Level1">
+          <Setter Property="Text" Value="○"/>
+        </Style>
+
+        <Style Selector="^.Level2">
+          <Setter Property="Text" Value="■"/>
+        </Style>
+
+        <Style Selector="^.Level3">
+          <Setter Property="Text" Value="□"/>
+        </Style>
+      </Style>
+    </Style>
+
+    <Style Selector="^ md|CodeBlock">
+      <Setter Property="ColorTheme" Value="{Binding $parent[md:MarkdownRenderer].CodeBlockColorTheme}"/>
+    </Style>
+
+    <Style Selector="^ md|MarkdownTextBlock">
+      <Setter Property="LinkContextMenu" Value="{Binding $parent[md:MarkdownRenderer].LinkContextMenu}"/>
+
+      <Style Selector="^:pointerover-link">
+        <Setter Property="Cursor" Value="Hand"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ md|Link">
+      <Setter Property="Foreground" Value="DodgerBlue"/>
+      <Setter Property="TextDecorations" Value="Underline"/>
+
+      <Style Selector="^:clicked">
+        <Setter Property="Foreground" Value="Purple"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Border.QuoteBlock">
+      <Setter Property="Background" Value="{DynamicResource SecondaryCardBackgroundColor}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource QuoteBorderColor}"/>
+      <Setter Property="BorderThickness" Value="4,0,0,0"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="Margin" Value="0,8"/>
+      <Setter Property="Padding" Value="8,6"/>
+    </Style>
+
+    <Style Selector="^ Border.Heading1Block">
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="Margin" Value="0,6"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize3Xl}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Border.Heading2Block">
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="Margin" Value="0,4"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize2Xl}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Border.Heading3Block">
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeXl}"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Border.Heading4Block">
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeL}"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Border.Heading5Block">
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeL}"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Border.Heading6Block">
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeL}"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ InlineUIContainer.Code">
+      <Style Selector="^ Border">
+        <Setter Property="ClipToBounds" Value="False"/>
+        <Setter Property="Margin" Value="2,0,2,0"/>
+        <Setter Property="Padding" Value="2,0"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Background" Value="{DynamicResource SecondaryCardBackgroundColor}"/>
+      </Style>
+
+      <Style Selector="^ md|MarkdownTextBlock">
+        <Setter Property="Margin" Value="0,0,0,-4"/>
+        <Setter Property="Foreground" Value="{DynamicResource CodeInlineColor}"/>
+        <Setter Property="FontFamily" Value="Consolas, 'Courier New', monospace"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ CheckBox.TaskList">
+      <Setter Property="MinHeight" Value="0"/>
+      <Setter Property="IsHitTestVisible" Value="False"/>
+      <Setter Property="Template">
+        <ControlTemplate TargetType="CheckBox">
+          <Viewbox
+            Width="{DynamicResource FontSizeM}"
+            Height="{DynamicResource FontSizeM}">
+            <Border
+              x:Name="Border"
+              Width="{DynamicResource FontSizeM}"
+              Height="{DynamicResource FontSizeM}"
+              BorderBrush="{DynamicResource BorderColor}"
+              BorderThickness="1"
+              CornerRadius="{TemplateBinding CornerRadius}">
+              <Path
+                x:Name="CheckMark" Width="8"
+                Height="7" HorizontalAlignment="Center"
+                VerticalAlignment="Center" Data="M1145.6 430S1147 431.3 1147 431.3 1141.5 438 1141.5 438 1138 434.6 1138 434.6s1.2-1.5 1.2-1.5 2.2 2 2.2 2S1145.6 430 1145.6 430Z"
+                Fill="{DynamicResource ForegroundColor}"
+                FlowDirection="LeftToRight" Stretch="Uniform"/>
+            </Border>
+          </Viewbox>
+        </ControlTemplate>
+      </Setter>
+
+      <Style Selector="^ /template/ Path#CheckMark">
+        <Setter Property="IsVisible" Value="False"/>
+      </Style>
+
+      <Style Selector="^:checked /template/ Border#Border">
+        <Setter Property="Background" Value="DodgerBlue"/>
+      </Style>
+
+      <Style Selector="^:checked /template/ Path#CheckMark">
+        <Setter Property="IsVisible" Value="True"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^ Border.ThematicBreak">
+      <Setter Property="Margin" Value="0,2"/>
+      <Setter Property="Height" Value="1"/>
+      <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
+    </Style>
+  </Style>
+</Styles>

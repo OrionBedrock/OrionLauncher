@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
+             xmlns:hub="clr-namespace:OrionBe.ViewModel.Hub"
+             xmlns:models="using:OrionBE.Launcher.Models"
+             xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OrionBe.View.HubView"
+             x:Name="Root"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             x:DataType="hub:HubViewModel">
+    <Grid RowDefinitions="*">
+        <DockPanel Grid.Row="0"
+                   LastChildFill="True">
+
+            <StackPanel DockPanel.Dock="Bottom"
+                        Spacing="0">
+                <Border Padding="12,14,28,18"
+                        Background="{DynamicResource Background}">
+                    <Grid ColumnDefinitions="*,Auto"
+                          VerticalAlignment="Center">
+                        <ComboBox Grid.Column="0"
+                                  MinWidth="240"
+                                  MaxWidth="420"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Left"
+                                  Margin="0,0,32,0"
+                                  IsVisible="{Binding HasHubInstances}"
+                                  ItemsSource="{Binding HubInstances}"
+                                  SelectedItem="{Binding SelectedHubInstance}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="models:InstanceSummary">
+                                    <TextBlock Text="{Binding Config.Name}"
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <Button Grid.Column="1"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Right"
+                                FontSize="18"
+                                BorderThickness="4"
+                                Padding="28,10"
+                                Classes="Primary"
+                                Content="{Binding PlayButtonLabel}"
+                                Command="{Binding HubPrimaryActionCommand}"/>
+                    </Grid>
+                </Border>
+
+                <Border Padding="24,0,24,22"
+                        Background="{DynamicResource Background2}">
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto"
+                                  MaxHeight="340">
+                        <StackPanel Spacing="16">
+                            <TextBlock Classes="h2"
+                                       VerticalAlignment="Center"
+                                       Text="{loc:LocalizerExtensions Key='hub_news_title'}"/>
+
+                            <ItemsControl ItemsSource="{Binding Infos}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <!-- Markdown tem altura variável; VirtualizingStackPanel pode medir 0 e esconder itens. -->
+                                        <StackPanel Orientation="Vertical"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,6">
+                                            <TextBlock Classes="h3"
+                                                       Foreground="{DynamicResource ButtonPrimary}"
+                                                       Text="{Binding Title}"/>
+                                            <Border Padding="16">
+                                                <md:MarkdownRenderer MarkdownBuilder="{Binding Content}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </StackPanel>
+
+            <Grid ClipToBounds="True">
+                <Image Stretch="UniformToFill"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       Source="avares://OrionBe/Assets/wallpaper.png"/>
+
+                <!-- Logo centered at top of hero area; Uniform keeps aspect ratio within max bounds -->
+                <Image Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="24,28,24,0"
+                       MaxWidth="520"
+                       MaxHeight="140"
+                       Source="avares://OrionBe/Assets/logo.png"
+                       IsHitTestVisible="False"/>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</UserControl>

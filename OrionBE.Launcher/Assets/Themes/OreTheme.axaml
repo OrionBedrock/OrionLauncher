@@ -1,15 +1,17 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Alinhado ao OrionBe/BaseColors: cinzas quentes + verde Minecraft, sem painéis esverdeados à parte -->
     <Styles.Resources>
-        <Color x:Key="OreBackgroundColor">#FF121814</Color>
-        <Color x:Key="OreSurfaceColor">#FF1B2620</Color>
-        <Color x:Key="OreAccentColor">#FF22C55E</Color>
-        <Color x:Key="OreMutedColor">#FFB6C4BC</Color>
+        <Color x:Key="OreBackgroundColor">#FF171615</Color>
+        <Color x:Key="OreSurfaceColor">#FF333333</Color>
+        <Color x:Key="OreAccentColor">#FF3C8527</Color>
+        <Color x:Key="OreMutedColor">#FFABA09C</Color>
 
         <SolidColorBrush x:Key="OreBackgroundBrush" Color="{StaticResource OreBackgroundColor}"/>
         <SolidColorBrush x:Key="OreSurfaceBrush" Color="{StaticResource OreSurfaceColor}"/>
         <SolidColorBrush x:Key="OreAccentBrush" Color="{StaticResource OreAccentColor}"/>
         <SolidColorBrush x:Key="OreMutedBrush" Color="{StaticResource OreMutedColor}"/>
+        <SolidColorBrush x:Key="OreBorderSubtleBrush" Color="#FF2A2827"/>
     </Styles.Resources>
 
     <Style Selector="Window">

@@ -73,13 +73,13 @@ dotnet build OrionBE.sln -c Release
 ### 2) Run (development)
 
 ```bash
-dotnet run --project OrionBE.Launcher/OrionBE.Launcher.csproj
+dotnet run --project OrionBe/OrionBe.csproj
 ```
 
 ### 3) Publish (self-contained Linux)
 
 ```bash
-dotnet publish OrionBE.Launcher/OrionBE.Launcher.csproj -c Release -r linux-x64 --self-contained true
+dotnet publish OrionBe/OrionBe.csproj -c Release -r linux-x64 --self-contained true
 ```
 
 ### 4) Build AppImage (scripted)

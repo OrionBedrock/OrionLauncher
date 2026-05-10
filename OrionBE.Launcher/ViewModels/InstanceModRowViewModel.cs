@@ -25,7 +25,7 @@ public sealed partial class InstanceModRowViewModel : ViewModelBase
         : this(owner, entry)
     {
         DisplayName = string.IsNullOrWhiteSpace(config?.Name) ? entry.GlobalFolderName : config.Name;
-        Version = config?.Version ?? "unknown";
+        Version = config?.Version ?? L("common_unknown_version");
         RequiresLeviLamina = compatibility.RequiresLeviLamina;
         CompatibilitySummary = compatibility.Summary;
         IsCompatible = compatibility.GameVersionCompatible

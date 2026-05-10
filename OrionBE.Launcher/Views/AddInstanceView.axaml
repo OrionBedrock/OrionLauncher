@@ -1,53 +1,65 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
              xmlns:vm="using:OrionBE.Launcher.ViewModels"
              x:Class="OrionBE.Launcher.Views.AddInstanceView"
              x:DataType="vm:AddInstanceViewModel">
     <Grid Margin="24" RowDefinitions="Auto,*,Auto">
         <TextBlock Grid.Row="0"
-                   Text="Add instance"
+                   Text="{loc:LocalizerExtensions Key='launcher_add_instance_title'}"
                    FontSize="26"
                    FontWeight="SemiBold"
+                   Foreground="{DynamicResource Foreground}"
                    Margin="0,0,0,16"/>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="14" MaxWidth="720">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Instance name" Foreground="{DynamicResource OreMutedBrush}"/>
-                    <TextBox Text="{Binding InstanceName}" Watermark="My survival world"/>
+                    <TextBlock Text="{loc:LocalizerExtensions Key='launcher_add_instance_instance_name'}" Foreground="{DynamicResource OreMutedBrush}"/>
+                    <TextBox Text="{Binding InstanceName}" Watermark="{loc:LocalizerExtensions Key='launcher_add_instance_watermark_name'}"/>
                 </StackPanel>
 
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Game version" Foreground="{DynamicResource OreMutedBrush}"/>
+                    <TextBlock Text="{loc:LocalizerExtensions Key='launcher_add_instance_game_version'}" Foreground="{DynamicResource OreMutedBrush}"/>
                     <ComboBox ItemsSource="{Binding GameVersions}"
                               SelectedItem="{Binding SelectedGameVersion}"
                               MinHeight="36"/>
                 </StackPanel>
 
-                <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="10" Padding="12">
+                <Border Background="{DynamicResource OreSurfaceBrush}"
+                        BorderBrush="{DynamicResource OreBorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Mode" FontWeight="SemiBold"/>
-                        <TextBlock Text="Vanilla is default. Enable mods to unlock the mod install pipeline for this instance."
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_add_instance_mode'}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Foreground}"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_add_instance_mode_hint'}"
                                    TextWrapping="Wrap"
                                    Foreground="{DynamicResource OreMutedBrush}"/>
                         <ToggleSwitch IsChecked="{Binding IsModsMode}"
-                                      OnContent="Mods"
-                                      OffContent="Vanilla"/>
+                                      OnContent="{loc:LocalizerExtensions Key='launcher_add_instance_toggle_mods'}"
+                                      OffContent="{loc:LocalizerExtensions Key='launcher_add_instance_toggle_vanilla'}"/>
                     </StackPanel>
                 </Border>
 
                 <Border Background="{DynamicResource OreSurfaceBrush}"
-                        CornerRadius="10"
-                        Padding="12"
+                        BorderBrush="{DynamicResource OreBorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14"
                         IsVisible="{Binding ShowLeviLaminaOption}">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="LeviLamina Loader" FontWeight="SemiBold"/>
-                        <TextBlock Text="This game version is compatible with LeviLamina. You can create the instance with or without the loader."
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_add_instance_levi_section'}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Foreground}"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_add_instance_levi_hint'}"
                                    TextWrapping="Wrap"
                                    Foreground="{DynamicResource OreMutedBrush}"/>
                         <ToggleSwitch IsChecked="{Binding InstallWithLeviLamina}"
-                                      OnContent="With LeviLamina"
-                                      OffContent="Without LeviLamina"/>
+                                      OnContent="{loc:LocalizerExtensions Key='launcher_add_instance_levi_with'}"
+                                      OffContent="{loc:LocalizerExtensions Key='launcher_add_instance_levi_without'}"/>
                         <ComboBox ItemsSource="{Binding LeviLaminaVersions}"
                                   SelectedItem="{Binding SelectedLeviLaminaVersion}"
                                   MinHeight="36"
@@ -56,16 +68,19 @@
                 </Border>
 
                 <Border Background="{DynamicResource OreSurfaceBrush}"
-                        CornerRadius="10"
-                        Padding="12"
+                        BorderBrush="{DynamicResource OreBorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14"
                         IsVisible="{Binding IsModsMode}">
                     <TextBlock Text="{Binding LeviSupportStatusText}"
-                               Foreground="{DynamicResource OreMutedBrush}"/>
+                               Foreground="{DynamicResource OreMutedBrush}"
+                               TextWrapping="Wrap"/>
                 </Border>
 
                 <ToggleSwitch IsChecked="{Binding KeepWindowOpenAfterSuccessfulInstall}"
-                              OnContent="Keep window open when installation succeeds (review logs)"
-                              OffContent="Return home when installation succeeds"/>
+                              OnContent="{loc:LocalizerExtensions Key='launcher_add_instance_keep_open_on'}"
+                              OffContent="{loc:LocalizerExtensions Key='launcher_add_instance_keep_open_off'}"/>
 
                 <StackPanel Spacing="8" IsVisible="{Binding IsInstalling}">
                     <TextBlock Text="{Binding InstallStatus}" Foreground="{DynamicResource OreMutedBrush}"/>
@@ -73,15 +88,19 @@
                 </StackPanel>
 
                 <Border Background="{DynamicResource OreSurfaceBrush}"
-                        CornerRadius="10"
-                        Padding="12">
+                        BorderBrush="{DynamicResource OreBorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14">
                     <StackPanel Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="Installation log"
+                            <TextBlock Text="{loc:LocalizerExtensions Key='launcher_add_instance_install_log_title'}"
                                        FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Foreground}"
                                        VerticalAlignment="Center"/>
                             <Button Grid.Column="1"
-                                    Content="Copy logs"
+                                    Classes="Outline"
+                                    Content="{loc:LocalizerExtensions Key='launcher_add_instance_copy_logs'}"
                                     MinWidth="140"
                                     Command="{Binding CopyInstallLogCommand}"/>
                         </Grid>
@@ -89,11 +108,14 @@
                                  IsReadOnly="True"
                                  AcceptsReturn="True"
                                  TextWrapping="Wrap"
+                                 Background="{DynamicResource Background}"
+                                 BorderBrush="{DynamicResource OreBorderSubtleBrush}"
+                                 Foreground="{DynamicResource Foreground}"
                                  FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
                                  FontSize="12"
                                  MinHeight="160"
                                  MaxHeight="280"
-                                 Watermark="Installation steps appear here while creating an instance."/>
+                                 Watermark="{loc:LocalizerExtensions Key='launcher_add_instance_install_log_watermark'}"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -104,12 +126,14 @@
                     HorizontalAlignment="Right"
                     Spacing="10"
                     Margin="0,16,0,0">
-            <Button Content="Cancel" MinWidth="120" Command="{Binding CancelCommand}"/>
-            <Button Content="Create"
+            <Button Classes="Outline"
+                    Content="{loc:LocalizerExtensions Key='launcher_add_instance_cancel'}"
                     MinWidth="120"
-                    Command="{Binding CreateCommand}"
-                    Background="{DynamicResource OreAccentBrush}"
-                    Foreground="#FF0B120E"/>
+                    Command="{Binding CancelCommand}"/>
+            <Button Classes="Primary"
+                    Content="{loc:LocalizerExtensions Key='launcher_add_instance_create'}"
+                    MinWidth="120"
+                    Command="{Binding CreateCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

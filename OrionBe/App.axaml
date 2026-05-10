@@ -1,0 +1,25 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dialog="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+             xmlns:fluentAvaloniaStyle="clr-namespace:FluentAvalonia.Styling;assembly=FluentAvalonia"
+             xmlns:launcher="using:OrionBE.Launcher"
+             xmlns:conv="using:OrionBE.Launcher.Infrastructure.Converters"
+             x:Class="OrionBe.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <conv:PathToBitmapConverter x:Key="PathBitmap"/>
+    </Application.Resources>
+
+    <Application.DataTemplates>
+        <launcher:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <fluentAvaloniaStyle:FluentAvaloniaTheme/>
+        <FluentTheme />
+        <StyleInclude Source="avares://OrionBe/Theme/OrionBETheme.axaml"/>
+        <StyleInclude Source="avares://OrionBE.Launcher.Runtime/Assets/Themes/OreTheme.axaml"/>
+        <dialog:DialogHostStyles/>
+    </Application.Styles>
+</Application>

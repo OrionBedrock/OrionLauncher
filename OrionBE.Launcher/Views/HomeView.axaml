@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
              xmlns:vm="using:OrionBE.Launcher.ViewModels"
              xmlns:views="using:OrionBE.Launcher.Views"
              x:Class="OrionBE.Launcher.Views.HomeView"
@@ -7,12 +8,12 @@
     <Grid RowDefinitions="Auto,*" Margin="24">
         <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
             <TextBlock DockPanel.Dock="Left"
-                       Text="Instances"
+                       Text="{loc:LocalizerExtensions Key='launcher_home_instances'}"
                        FontSize="26"
                        FontWeight="SemiBold"
                        VerticalAlignment="Center"/>
             <Button DockPanel.Dock="Right"
-                    Content="Add instance"
+                    Content="{loc:LocalizerExtensions Key='launcher_home_add_instance'}"
                     Command="{Binding AddInstanceCommand}"
                     Padding="16,10"
                     Background="{DynamicResource OreAccentBrush}"

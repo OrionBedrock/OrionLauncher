@@ -1,0 +1,86 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <StackPanel Spacing="12">
+
+                <TextBlock Classes="h1" Text="Heading 1 (h1)"/>
+                <TextBlock Classes="h2" Text="Heading 2 (h2)"/>
+                <TextBlock Classes="h3" Text="Heading 3 (h3)"/>
+                <TextBlock Classes="h4" Text="Heading 4 (h4)"/>
+
+                <TextBlock Classes="Lead" Text="Lead text - destaque"/>
+                <TextBlock Classes="Large" Text="Large text"/>
+                
+                <TextBlock Classes="p" Text="Paragraph padrão (p) - Lorem ipsum dolor sit amet."/>
+                
+                <TextBlock Classes="Small" Text="Small text"/>
+                
+                <TextBlock Classes="Caption" Text="Caption text"/>
+
+                <TextBlock Classes="Muted" Text="Muted text (secundário)"/>
+                <TextBlock Classes="Error" Text="Error text (destructive)"/>
+
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+    
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="48" />
+        <Setter Property="FontWeight" Value="ExtraBold" />
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+    </Style>
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+    </Style>
+
+    <Style Selector="TextBlock.h3">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+    </Style>
+
+    <Style Selector="TextBlock.h4">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+    </Style>
+
+    <Style Selector="TextBlock.p">
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+    
+    <Style Selector="TextBlock.mono">
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+    </Style>
+
+    <Style Selector="TextBlock.Lead">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundLeadColor}" />
+    </Style>
+
+    <Style Selector="TextBlock.Large">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.Small">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+
+    <Style Selector="TextBlock.Caption">
+        <Setter Property="FontSize" Value="12.8" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+
+    <Style Selector="TextBlock.Muted">
+        <Setter Property="Foreground" Value="{DynamicResource MutedColor}" />
+    </Style>
+
+    <Style Selector="TextBlock.Error">
+        <Setter Property="Foreground" Value="{DynamicResource DestructiveColor}" />
+    </Style>
+</Styles>

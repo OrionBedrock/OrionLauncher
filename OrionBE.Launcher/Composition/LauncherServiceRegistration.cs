@@ -7,12 +7,13 @@ using OrionBE.Launcher.ViewModels;
 
 namespace OrionBE.Launcher.Composition;
 
-public static class AppBootstrapper
+/// <summary>
+/// Registers OrionBE launcher services for dependency injection (shell-agnostic).
+/// </summary>
+public static class LauncherServiceRegistration
 {
-    public static ServiceProvider CreateServiceProvider()
+    public static IServiceCollection AddOrionLauncherServices(this IServiceCollection services)
     {
-        var services = new ServiceCollection();
-
         services.AddLogging(static builder =>
         {
             builder.ClearProviders();
@@ -32,7 +33,7 @@ public static class AppBootstrapper
             {
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("OrionBE-Launcher/1.0");
             });
-
+        services.AddSingleton<ILauncherSettingsService, LauncherSettingsService>();
         services.AddSingleton<IFileSystemService, FileSystemService>();
         services.AddSingleton<IAppEventBus, AppEventBus>();
         services.AddSingleton<IBedrockVersionCatalogService, BedrockVersionCatalogService>();
@@ -52,15 +53,15 @@ public static class AppBootstrapper
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         services.AddSingleton<INavigationService>(static sp => new NavigationService(sp));
         services.AddSingleton<IUiDialogService, AvaloniaUiDialogService>();
+        services.AddSingleton<ILauncherProfileService, LauncherProfileService>();
 
         services.AddSingleton<HomeViewModel>();
         services.AddSingleton<BrowseModsViewModel>();
 
-        services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<AddInstanceViewModel>();
         services.AddTransient<InstanceSettingsViewModel>();
         services.AddTransient<ModDetailsViewModel>();
 
-        return services.BuildServiceProvider();
+        return services;
     }
 }

@@ -1,16 +1,20 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
              xmlns:vm="using:OrionBE.Launcher.ViewModels"
              x:Class="OrionBE.Launcher.Views.InstanceCardView"
              x:DataType="vm:InstanceCardViewModel">
     <Border Width="240"
             Height="200"
-            CornerRadius="12"
+            CornerRadius="10"
             Background="{DynamicResource OreSurfaceBrush}"
+            BorderBrush="{DynamicResource OreBorderSubtleBrush}"
+            BorderThickness="1"
             Padding="12">
         <Grid RowDefinitions="Auto,*,Auto">
             <TextBlock Text="{Binding DisplayName}"
                        FontWeight="SemiBold"
+                       Foreground="{DynamicResource Foreground}"
                        TextTrimming="CharacterEllipsis"/>
 
             <StackPanel Grid.Row="1"
@@ -28,22 +32,26 @@
                 <Button DockPanel.Dock="Right"
                         Command="{Binding OpenSettingsCommand}"
                         Padding="8"
-                        Background="#22000000"
-                        ToolTip.Tip="Settings">
+                        CornerRadius="6"
+                        Background="{DynamicResource Background2}"
+                        BorderBrush="{DynamicResource OreBorderSubtleBrush}"
+                        BorderThickness="1"
+                        ToolTip.Tip="{loc:LocalizerExtensions Key='launcher_instance_card_settings_tooltip'}">
                     <Image Width="18"
                            Height="18"
                            Source="/Assets/Icons/settings_instance.ico"/>
                 </Button>
 
-                <Button Command="{Binding PlayCommand}"
+                <Button Classes="Primary"
+                        Command="{Binding PlayCommand}"
                         IsEnabled="{Binding IsPlayEnabled}"
                         HorizontalAlignment="Stretch"
-                        Padding="10,8"
-                        Background="{DynamicResource OreAccentBrush}"
-                        Foreground="#FF0B120E">
+                        Padding="10,8">
                     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                         <Image Width="16" Height="16" Source="/Assets/Icons/play_instance.ico"/>
-                        <TextBlock Text="{Binding PlayButtonText}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding PlayButtonText}"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource Foreground}"/>
                     </StackPanel>
                 </Button>
             </DockPanel>

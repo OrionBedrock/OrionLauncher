@@ -5,11 +5,12 @@ using CommunityToolkit.Mvvm.Input;
 using OrionBE.Launcher.Core;
 using OrionBE.Launcher.Core.Events;
 using OrionBE.Launcher.Models;
+using OrionBE.Launcher.I18n;
 using OrionBE.Launcher.Services;
 
 namespace OrionBE.Launcher.ViewModels;
 
-public sealed partial class InstanceSettingsViewModel : ViewModelBase
+public sealed partial class InstanceSettingsViewModel : ViewModelBase, IDisposable
 {
     private readonly IInstanceService _instanceService;
     private readonly INavigationService _navigationService;
@@ -40,6 +41,25 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
         _modService = modService;
         _bedrockCatalog = bedrockCatalog;
         _installationService = installationService;
+        Localizer.Instance.CultureChanged += OnLocalizationChanged;
+    }
+
+    public void Dispose()
+    {
+        Localizer.Instance.CultureChanged -= OnLocalizationChanged;
+    }
+
+    private void OnLocalizationChanged(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(FolderName))
+        {
+            return;
+        }
+
+        _ = Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await RefreshUpgradeEligibilityAsync(GameVersion).ConfigureAwait(false);
+        });
     }
 
     [ObservableProperty]
@@ -137,11 +157,8 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task DeleteInstanceAsync()
     {
-        var title = "Delete instance";
-        var message =
-            $"The folder and all files for this instance will be deleted from disk.\n\n" +
-            $"“{DisplayName}”\n" +
-            $"This cannot be undone. Continue?";
+        var title = L("dialogs_delete_instance_title");
+        var message = LF("dialogs_delete_instance_body", DisplayName);
         if (!await _uiDialogService.ConfirmAsync(title, message).ConfigureAwait(true))
         {
             return;
@@ -155,7 +172,7 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            await _uiDialogService.ShowMessageAsync("OrionBE", ex.Message).ConfigureAwait(true);
+            await _uiDialogService.ShowMessageAsync(L("app_brand"), ex.Message).ConfigureAwait(true);
         }
     }
 
@@ -188,7 +205,7 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
 
         if (string.IsNullOrWhiteSpace(ImportPath))
         {
-            await _uiDialogService.ShowMessageAsync("OrionBE", "Enter a path to a local file.").ConfigureAwait(true);
+            await _uiDialogService.ShowMessageAsync(L("app_brand"), L("dialogs_enter_local_path")).ConfigureAwait(true);
             return;
         }
 
@@ -210,8 +227,8 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
                 if (inspection.DllRelativePaths.Count > 1)
                 {
                     selectedDll = await _uiDialogService.PickOptionAsync(
-                            "Select primary DLL",
-                            "Multiple .dll files were found in this ZIP. Choose the main one used by this mod:",
+                            L("dialogs_select_primary_dll_title"),
+                            L("dialogs_select_primary_dll_body"),
                             inspection.DllRelativePaths)
                         .ConfigureAwait(true);
                     if (selectedDll is null)
@@ -228,17 +245,17 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
                 if (inspection.NeedsNormalization)
                 {
                     normalize = await _uiDialogService.ConfirmAsync(
-                            "Fix mod folder layout?",
-                            "Current mod structure places .dll files in a nested folder.\n\n" +
-                            $"Current example: {inspection.CurrentLayoutExample}\n" +
-                            $"Recommended: {inspection.RecommendedLayoutExample}\n\n" +
-                            "Do you want OrionBE to normalize this ZIP layout before import?")
+                            L("dialogs_fix_mod_layout_title"),
+                            LF(
+                                "dialogs_fix_mod_layout_body",
+                                inspection.CurrentLayoutExample,
+                                inspection.RecommendedLayoutExample))
                         .ConfigureAwait(true);
                 }
 
                 folder = await _modService.ImportGlobalModZipAsync(
                         ImportPath.Trim(),
-                        string.IsNullOrWhiteSpace(ImportDisplayName) ? "Imported mod" : ImportDisplayName.Trim(),
+                        string.IsNullOrWhiteSpace(ImportDisplayName) ? L("import_default_mod_name") : ImportDisplayName.Trim(),
                         summary.Config.Version,
                         new ModZipImportOptions
                         {
@@ -266,7 +283,7 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            await _uiDialogService.ShowMessageAsync("OrionBE", ex.Message).ConfigureAwait(true);
+            await _uiDialogService.ShowMessageAsync(L("app_brand"), ex.Message).ConfigureAwait(true);
         }
     }
 
@@ -320,8 +337,11 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
             {
                 CanUpgradeBedrock = next is not null;
                 UpgradeHintText = next is not null
-                    ? $"Newer {ChannelKindLabel(next)} build available: {next.DropdownLabel}."
-                    : "No newer build in this channel. Stable does not move to preview (and vice versa); downgrades are not offered.";
+                    ? LF(
+                        "launcher_instance_settings_upgrade_hint_newer",
+                        ChannelKindLabel(next),
+                        next.DropdownLabel)
+                    : L("launcher_instance_settings_upgrade_hint_none");
                 UpgradeBedrockCommand.NotifyCanExecuteChanged();
             });
         }
@@ -330,14 +350,16 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 CanUpgradeBedrock = false;
-                UpgradeHintText = "Could not check the Bedrock catalog for updates.";
+                UpgradeHintText = L("launcher_instance_settings_upgrade_hint_error");
                 UpgradeBedrockCommand.NotifyCanExecuteChanged();
             });
         }
     }
 
     private static string ChannelKindLabel(BedrockVersionEntry entry) =>
-        string.Equals(entry.Type, "preview", StringComparison.OrdinalIgnoreCase) ? "preview" : "stable";
+        string.Equals(entry.Type, "preview", StringComparison.OrdinalIgnoreCase)
+            ? L("launcher_instance_settings_channel_preview")
+            : L("launcher_instance_settings_channel_stable");
 
     [RelayCommand(CanExecute = nameof(CanRunBedrockUpgrade))]
     private async Task UpgradeBedrockAsync()
@@ -347,14 +369,14 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
         {
             await _installationService.UpgradeInstanceToLatestEligibleAsync(FolderName, progress: null).ConfigureAwait(false);
             await _uiDialogService
-                .ShowMessageAsync("OrionBE", "The instance was updated to the latest game files allowed for this channel.")
+                .ShowMessageAsync(L("app_brand"), L("dialogs_instance_updated"))
                 .ConfigureAwait(true);
             _appEventBus.Publish(new InstancesChanged());
             await LoadAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            await _uiDialogService.ShowMessageAsync("OrionBE", ex.Message).ConfigureAwait(true);
+            await _uiDialogService.ShowMessageAsync(L("app_brand"), ex.Message).ConfigureAwait(true);
         }
         finally
         {

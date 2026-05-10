@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:OrionBe.ViewModel.Mods"
+             xmlns:launcher="using:OrionBE.Launcher"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OrionBe.View.Mods.ModsView"
+             x:DataType="vm:ModsViewModel"
+             Background="{DynamicResource Background}">
+    <Border Padding="30, 140, 30, 30">
+        <ContentControl Content="{Binding ShellPage}">
+            <ContentControl.ContentTemplate>
+                <launcher:ViewLocator/>
+            </ContentControl.ContentTemplate>
+        </ContentControl>
+    </Border>
+</UserControl>

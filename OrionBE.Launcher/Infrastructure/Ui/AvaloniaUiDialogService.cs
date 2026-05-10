@@ -2,8 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using OrionBE.Launcher.Models;
+using OrionBE.Launcher.I18n;
 using OrionBE.Launcher.Services;
 using OrionBE.Launcher.ViewModels;
 using OrionBE.Launcher.Views;
@@ -42,7 +44,7 @@ public sealed class AvaloniaUiDialogService : IUiDialogService
                         new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
                         new Button
                         {
-                            Content = "OK",
+                            Content = Localizer.Instance["common_ok"],
                             MinWidth = 96,
                             HorizontalAlignment = HorizontalAlignment.Right,
                         },
@@ -73,8 +75,18 @@ public sealed class AvaloniaUiDialogService : IUiDialogService
                 CanResize = false,
             };
 
-            var ok = new Button { Content = "OK", MinWidth = 96, HorizontalAlignment = HorizontalAlignment.Right };
-            var cancel = new Button { Content = "Cancel", MinWidth = 96, HorizontalAlignment = HorizontalAlignment.Right };
+            var ok = new Button
+            {
+                Content = Localizer.Instance["common_ok"],
+                MinWidth = 96,
+                HorizontalAlignment = HorizontalAlignment.Right,
+            };
+            var cancel = new Button
+            {
+                Content = Localizer.Instance["common_cancel"],
+                MinWidth = 96,
+                HorizontalAlignment = HorizontalAlignment.Right,
+            };
 
             ok.Click += (_, _) =>
             {
@@ -135,8 +147,18 @@ public sealed class AvaloniaUiDialogService : IUiDialogService
                 CanResize = false,
             };
 
-            var ok = new Button { Content = "OK", MinWidth = 96, HorizontalAlignment = HorizontalAlignment.Right };
-            var cancel = new Button { Content = "Cancel", MinWidth = 96, HorizontalAlignment = HorizontalAlignment.Right };
+            var ok = new Button
+            {
+                Content = Localizer.Instance["common_ok"],
+                MinWidth = 96,
+                HorizontalAlignment = HorizontalAlignment.Right,
+            };
+            var cancel = new Button
+            {
+                Content = Localizer.Instance["common_cancel"],
+                MinWidth = 96,
+                HorizontalAlignment = HorizontalAlignment.Right,
+            };
 
             ok.Click += (_, _) =>
             {
@@ -171,6 +193,25 @@ public sealed class AvaloniaUiDialogService : IUiDialogService
             return result;
         });
 
+    public Task<string?> PickImageFileAsync(CancellationToken cancellationToken = default) =>
+        Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            var owner = _mainWindow ?? throw new InvalidOperationException("Main window is not attached.");
+            var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = Localizer.Instance["profile_pick_photo_title"],
+                AllowMultiple = false,
+                FileTypeFilter = new[] { FilePickerFileTypes.ImageAll },
+            }).ConfigureAwait(true);
+
+            if (files.Count == 0)
+            {
+                return null;
+            }
+
+            return files[0].TryGetLocalPath();
+        });
+
     public Task<InstanceSummary?> PickModdedInstanceAsync(CancellationToken cancellationToken = default) =>
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
@@ -181,15 +222,15 @@ public sealed class AvaloniaUiDialogService : IUiDialogService
             if (moddable.Count == 0)
             {
                 await ShowMessageAsync(
-                        "No instances",
-                        "There are no instances with mods enabled. Enable mods on an instance or create a new mod-enabled instance.")
+                        Localizer.Instance["dialogs_no_modded_instances_title"],
+                        Localizer.Instance["dialogs_no_modded_instances_body"])
                     .ConfigureAwait(true);
                 return null;
             }
 
             var window = new InstancePickerWindow
             {
-                Title = "Select instance",
+                Title = Localizer.Instance["launcher_instance_picker_title"],
                 DataContext = new InstancePickerViewModel(moddable),
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
             };

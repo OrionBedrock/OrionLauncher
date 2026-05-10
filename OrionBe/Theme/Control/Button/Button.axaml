@@ -1,0 +1,65 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <WrapPanel ItemSpacing="20">
+                <Button Classes="Primary" Content="Primary"/>
+                <Button Classes="Outline" Content="Outline"/>
+                <Button Classes="Secondary" Content="Secondary"/>
+                
+                <Button Classes="Icon">
+                    <LucideIcon  Kind="Dock"/>
+                </Button>
+                
+            </WrapPanel>
+            
+        </Border>
+    </Design.PreviewWith>
+    
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+    </Style>
+    
+    <Style Selector="Button.Icon">
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Background" Value="{DynamicResource MenuBackground}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    
+    <Style Selector="Button.Icon:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ButtonPrimaryHover}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderPrimaryHover}"/>
+    </Style>
+    
+    <Style Selector="Button.Primary, Button.Outline, Button.Secondary">
+        <Setter Property="Padding" Value="20, 5"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    
+    <Style Selector="Button.Primary">
+        <Setter Property="Background" Value="{DynamicResource ButtonPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+    </Style>
+    
+    <Style Selector="Button.Primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ButtonPrimaryHover}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderPrimaryHover}"/>
+    </Style>
+    
+    <Style Selector="Button.Outline">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderPrimary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+    </Style>
+    
+    <Style Selector="Button.Outline:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ButtonPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderPrimary}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+</Styles>

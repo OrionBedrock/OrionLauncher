@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    
+    <SolidColorBrush x:Key="Foreground2" Color="#aba09c"/>
+    <SolidColorBrush x:Key="Foreground" Color="#ffffff"/>
+    <SolidColorBrush x:Key="Background" Color="#171615"/>
+    <SolidColorBrush x:Key="Background2" Color="#333333"/>
+
+    <SolidColorBrush x:Key="BackgroundCard" Color="#3d3938"/>
+    
+    <SolidColorBrush x:Key="ButtonPrimary" Color="#3c8527"/>
+    <SolidColorBrush x:Key="ButtonBorderPrimary" Color="#2a641c"/>
+    
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#4fa532"/>
+    <SolidColorBrush x:Key="ButtonBorderPrimaryHover" Color="#3c8527"/>
+    
+    <SolidColorBrush x:Key="ButtonDestructive" Color="#ff2e3b"/>
+    <SolidColorBrush x:Key="MenuBackground" Color="#40E0E3E6"/>
+    
+    <FontFamily x:Key="Monocraft">
+        avares://OrionBe/Assets/Fonts/Monocraft.ttf#Monocraft
+    </FontFamily>
+</ResourceDictionary>

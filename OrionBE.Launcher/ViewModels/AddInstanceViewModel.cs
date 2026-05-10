@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OrionBE.Launcher.Core.Events;
+using OrionBE.Launcher.I18n;
 using OrionBE.Launcher.Services;
 
 namespace OrionBE.Launcher.ViewModels;
@@ -25,6 +26,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     private readonly INavigationService _navigationService;
     private readonly IAppEventBus _eventBus;
     private readonly ILeviLaminaCompatibilityService _leviLaminaCompatibilityService;
+    private readonly ILauncherSettingsService _launcherSettings;
     private readonly IDisposable _progressSubscription;
     private readonly IDisposable _installLogSubscription;
 
@@ -37,7 +39,8 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         IInstallationService installationService,
         INavigationService navigationService,
         IAppEventBus eventBus,
-        ILeviLaminaCompatibilityService leviLaminaCompatibilityService)
+        ILeviLaminaCompatibilityService leviLaminaCompatibilityService,
+        ILauncherSettingsService launcherSettings)
     {
         _apiService = apiService;
         _instanceService = instanceService;
@@ -45,6 +48,8 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         _navigationService = navigationService;
         _eventBus = eventBus;
         _leviLaminaCompatibilityService = leviLaminaCompatibilityService;
+        _launcherSettings = launcherSettings;
+        Localizer.Instance.CultureChanged += OnLocalizationChanged;
         _progressSubscription = _eventBus.Subscribe<InstallationProgressChanged>(e =>
         {
             Dispatcher.UIThread.Post(
@@ -223,7 +228,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
         InstallLogText = string.Empty;
         IsInstalling = true;
         InstallProgress = 0;
-        InstallStatus = "Preparing...";
+        InstallStatus = L("launcher_add_instance_status_preparing");
 
         try
         {
@@ -240,6 +245,16 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
                     progress: null)
                 .ConfigureAwait(false);
 
+            try
+            {
+                var merged = _launcherSettings.Load();
+                merged.LastPlayedInstanceFolderName = folder;
+                _launcherSettings.Save(merged);
+            }
+            catch
+            {
+            }
+
             if (!KeepWindowOpenAfterSuccessfulInstall)
             {
                 _navigationService.GoBack();
@@ -248,7 +263,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    InstallStatus = "Installation finished successfully.";
+                    InstallStatus = L("launcher_add_instance_status_finished");
                     InstallProgress = 1;
                 });
             }
@@ -291,9 +306,13 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
     }
 
     public bool ShowLeviLaminaOption => IsModsMode && IsSelectedVersionLeviCompatible;
+
     public string LeviSupportStatusText => IsSelectedVersionLeviCompatible
-        ? "LeviLamina support available for this game version."
-        : "LeviLamina not available for this game version.";
+        ? L("launcher_add_instance_levi_support_yes")
+        : L("launcher_add_instance_levi_support_no");
+
+    private void OnLocalizationChanged(object? sender, EventArgs e) =>
+        OnPropertyChanged(nameof(LeviSupportStatusText));
 
     private async Task RefreshLeviCompatibilityAsync(string selectedGameVersion)
     {
@@ -341,6 +360,7 @@ public sealed partial class AddInstanceViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        Localizer.Instance.CultureChanged -= OnLocalizationChanged;
         _progressSubscription.Dispose();
         _installLogSubscription.Dispose();
     }

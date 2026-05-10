@@ -1,0 +1,72 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <ToggleButton Classes="Nav" Content="Home"/>
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="ToggleButton.Nav">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="rgba(255, 255, 255, 0.8)"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="18"/>
+        
+        <Style Selector="^:pointerover /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource ButtonPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        
+        <Style Selector="^:unchecked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        
+        <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ButtonPrimaryHover}"/>
+        </Style>
+        
+    </Style>
+
+    <!-- Barra lateral estilo launcher (ícone + texto, linha completa) -->
+    <Style Selector="ToggleButton.NavRail">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="#252423"/>
+        </Style>
+
+        <Style Selector="^:checked">
+            <Setter Property="Background" Value="{DynamicResource Background2}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+        </Style>
+    </Style>
+
+    <Style Selector="Button.NavRailFlat">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="{StaticResource Monocraft}"/>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="#252423"/>
+        </Style>
+    </Style>
+</Styles>

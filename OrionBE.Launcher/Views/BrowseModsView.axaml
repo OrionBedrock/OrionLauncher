@@ -1,12 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
              xmlns:vm="using:OrionBE.Launcher.ViewModels"
              xmlns:models="using:OrionBE.Launcher.Models"
              x:Class="OrionBE.Launcher.Views.BrowseModsView"
              x:DataType="vm:BrowseModsViewModel">
     <Grid Margin="24" RowDefinitions="Auto,*">
         <TextBlock Grid.Row="0"
-                   Text="Browse mods"
+                   Text="{loc:LocalizerExtensions Key='launcher_browse_mods_title'}"
                    FontSize="26"
                    FontWeight="SemiBold"
                    Margin="0,0,0,16"/>
@@ -41,7 +42,7 @@
 
                                 <Button Grid.Column="2"
                                         VerticalAlignment="Center"
-                                        Content="Details"
+                                        Content="{loc:LocalizerExtensions Key='common_details'}"
                                         Tag="{Binding}"
                                         Click="Details_Click"/>
                             </Grid>

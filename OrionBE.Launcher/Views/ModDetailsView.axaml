@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="using:System"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
              xmlns:vm="using:OrionBE.Launcher.ViewModels"
              xmlns:models="using:OrionBE.Launcher.Models"
              xmlns:conv="using:OrionBE.Launcher.Infrastructure.Converters"
@@ -22,7 +23,7 @@
                 <TextBlock Text="{Binding FullDescription}" TextWrapping="Wrap"/>
 
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Version" Foreground="{DynamicResource OreMutedBrush}"/>
+                    <TextBlock Text="{loc:LocalizerExtensions Key='launcher_mod_details_version'}" Foreground="{DynamicResource OreMutedBrush}"/>
                     <ComboBox ItemsSource="{Binding Versions}"
                               SelectedItem="{Binding SelectedVersion}"
                               MinHeight="36">
@@ -30,10 +31,11 @@
                             <DataTemplate x:DataType="models:ModVersion">
                                 <TextBlock>
                                     <Run Text="{Binding Version}"/>
-                                    <Run Text="  (targets "/>
+                                    <Run Text="{loc:LocalizerExtensions Key='launcher_mod_details_targets_open'}"/>
                                     <Run Text="{Binding SupportedGameVersion}"/>
-                                    <Run Text=") "/>
-                                    <Run Text="{Binding LeviLaminaVersionRange, StringFormat='LL: {0}'}"/>
+                                    <Run Text="{loc:LocalizerExtensions Key='launcher_mod_details_targets_close'}"/>
+                                    <Run Text="{loc:LocalizerExtensions Key='launcher_mod_details_ll_prefix'}"/>
+                                    <Run Text="{Binding LeviLaminaVersionRange}"/>
                                 </TextBlock>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -41,8 +43,8 @@
                 </StackPanel>
 
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Screenshots" FontWeight="SemiBold"/>
-                    <TextBlock Text="Optional images resolved from docs/prints when present next to the published build."
+                    <TextBlock Text="{loc:LocalizerExtensions Key='launcher_mod_details_screenshots'}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{loc:LocalizerExtensions Key='launcher_mod_details_screenshots_hint'}"
                                Foreground="{DynamicResource OreMutedBrush}"
                                TextWrapping="Wrap"/>
 
@@ -74,8 +76,8 @@
                     HorizontalAlignment="Right"
                     Spacing="10"
                     Margin="0,16,0,0">
-            <Button Content="Back" MinWidth="120" Command="{Binding BackCommand}"/>
-            <Button Content="Install"
+            <Button Content="{loc:LocalizerExtensions Key='common_back'}" MinWidth="120" Command="{Binding BackCommand}"/>
+            <Button Content="{loc:LocalizerExtensions Key='common_install'}"
                     MinWidth="120"
                     Command="{Binding InstallCommand}"
                     Background="{DynamicResource OreAccentBrush}"

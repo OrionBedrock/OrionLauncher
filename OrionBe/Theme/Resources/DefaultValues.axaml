@@ -1,0 +1,17 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:system="clr-namespace:System;assembly=netstandard"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="BorderColor">#3DFFFFFF</Color>
+    <Color x:Key="ForegroundColor">#FFFFFF</Color>
+    <Color x:Key="CardBackgroundColor">#15000000</Color>
+    <Color x:Key="SecondaryCardBackgroundColor">#99000000</Color>
+    <Color x:Key="CodeInlineColor">#D7BA7D</Color>
+    <Color x:Key="QuoteBorderColor">#D7BA7D</Color>
+
+    <system:Double x:Key="FontSizeS">12.8</system:Double>
+    <system:Double x:Key="FontSizeM">14</system:Double>
+    <system:Double x:Key="FontSizeL">16</system:Double>
+    <system:Double x:Key="FontSizeXl">18</system:Double>
+    <system:Double x:Key="FontSize2Xl">20</system:Double>
+    <system:Double x:Key="FontSize3Xl">24</system:Double>
+</ResourceDictionary>

@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=OrionBE Launcher
-Comment=Launcher desktop do OrionBE
-Exec=OrionBE.Launcher
+Comment=Minecraft Bedrock launcher (OrionBE)
+Exec=OrionBe
 Icon=orionbe-launcher
 Terminal=false
 Categories=Utility;

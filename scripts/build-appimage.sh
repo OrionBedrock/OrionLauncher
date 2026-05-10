@@ -2,15 +2,16 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT_PATH="$ROOT_DIR/OrionBE.Launcher/OrionBE.Launcher.csproj"
+PROJECT_PATH="$ROOT_DIR/OrionBe/OrionBe.csproj"
 RID="${1:-linux-x64}"
 CONFIGURATION="${2:-Release}"
-APP_NAME="OrionBE.Launcher"
+APP_NAME="OrionBe"
 APP_DIR="$ROOT_DIR/artifacts/AppDir/$RID"
 PUBLISH_DIR="$ROOT_DIR/artifacts/publish/$RID"
 OUTPUT_DIR="$ROOT_DIR/artifacts/appimage/$RID"
 DESKTOP_TEMPLATE="$ROOT_DIR/packaging/linux/orionbe-launcher.desktop"
 ICON_TEMPLATE="$ROOT_DIR/packaging/linux/orionbe-launcher.svg"
+METAINFO_TEMPLATE="$ROOT_DIR/packaging/linux/io.orionbe.launcher.metainfo.xml"
 APPIMAGE_TOOL_BIN="${APPIMAGE_TOOL:-appimagetool}"
 
 if ! command -v dotnet >/dev/null 2>&1; then
@@ -28,7 +29,7 @@ if [[ ! -f "$PROJECT_PATH" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$DESKTOP_TEMPLATE" || ! -f "$ICON_TEMPLATE" ]]; then
+if [[ ! -f "$DESKTOP_TEMPLATE" || ! -f "$ICON_TEMPLATE" || ! -f "$METAINFO_TEMPLATE" ]]; then
   echo "Erro: arquivos de packaging Linux ausentes em packaging/linux."
   exit 1
 fi
@@ -45,20 +46,28 @@ dotnet publish "$PROJECT_PATH" \
 
 echo "Montando AppDir..."
 rm -rf "$APP_DIR" "$OUTPUT_DIR"
-mkdir -p "$APP_DIR/usr/bin" "$APP_DIR/usr/share/applications" "$APP_DIR/usr/share/icons/hicolor/scalable/apps" "$OUTPUT_DIR"
+mkdir -p "$APP_DIR/usr/bin" "$APP_DIR/usr/share/applications" "$APP_DIR/usr/share/metainfo" "$APP_DIR/usr/share/icons/hicolor/scalable/apps" "$OUTPUT_DIR"
 
 cp -a "$PUBLISH_DIR/." "$APP_DIR/usr/bin/"
 cp "$DESKTOP_TEMPLATE" "$APP_DIR/orionbe-launcher.desktop"
 cp "$DESKTOP_TEMPLATE" "$APP_DIR/usr/share/applications/orionbe-launcher.desktop"
 cp "$ICON_TEMPLATE" "$APP_DIR/orionbe-launcher.svg"
 cp "$ICON_TEMPLATE" "$APP_DIR/usr/share/icons/hicolor/scalable/apps/orionbe-launcher.svg"
+cp "$METAINFO_TEMPLATE" "$APP_DIR/usr/share/metainfo/io.orionbe.launcher.metainfo.xml"
 ln -sf "orionbe-launcher.svg" "$APP_DIR/.DirIcon"
+
+# Não criar orionbe-launcher.appdata.xml: um symlink com esse nome faz o appstreamcli
+# validar dois ficheiros e falhar (metainfo-filename-cid-mismatch com <id>io.orionbe.launcher</id>).
+if command -v appstreamcli >/dev/null 2>&1; then
+  echo "Validando AppStream (io.orionbe.launcher.metainfo.xml)..."
+  appstreamcli validate "$APP_DIR/usr/share/metainfo/io.orionbe.launcher.metainfo.xml"
+fi
 
 cat > "$APP_DIR/AppRun" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec "$HERE/usr/bin/OrionBE.Launcher" "$@"
+exec "$HERE/usr/bin/OrionBe" "$@"
 EOF
 chmod +x "$APP_DIR/AppRun"
 
@@ -75,6 +84,7 @@ case "$RID" in
 esac
 
 echo "Gerando AppImage..."
-ARCH="$APPIMAGE_ARCH" "$APPIMAGE_TOOL_BIN" "$APP_DIR" "$APPIMAGE_PATH"
+# --no-appstream: a validação interna do appimagetool duplica/legacy paths e falha; já validámos com appstreamcli.
+ARCH="$APPIMAGE_ARCH" "$APPIMAGE_TOOL_BIN" --no-appstream "$APP_DIR" "$APPIMAGE_PATH"
 
 echo "AppImage pronta: $APPIMAGE_PATH"

@@ -1,11 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
              xmlns:vm="using:OrionBE.Launcher.ViewModels"
              x:Class="OrionBE.Launcher.Views.InstanceSettingsView"
              x:DataType="vm:InstanceSettingsViewModel">
     <Grid Margin="24" RowDefinitions="Auto,*,Auto">
         <TextBlock Grid.Row="0"
-                   Text="Instance settings"
+                   Text="{loc:LocalizerExtensions Key='launcher_instance_settings_title'}"
                    FontSize="26"
                    FontWeight="SemiBold"
                    Margin="0,0,0,16"/>
@@ -14,23 +15,23 @@
             <StackPanel Spacing="16" MaxWidth="900">
                 <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Summary" FontWeight="SemiBold"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_summary'}" FontWeight="SemiBold"/>
                         <TextBlock>
-                            <Run Text="Name:"/>
+                            <Run Text="{loc:LocalizerExtensions Key='common_name_label'}"/>
                             <Run Text="{Binding DisplayName}"/>
                         </TextBlock>
                         <TextBlock>
-                            <Run Text="Version:"/>
+                            <Run Text="{loc:LocalizerExtensions Key='common_version_label'}"/>
                             <Run Text="{Binding GameVersion}"/>
                         </TextBlock>
                         <TextBlock>
-                            <Run Text="Mods enabled:"/>
+                            <Run Text="{loc:LocalizerExtensions Key='common_mods_enabled_label'}"/>
                             <Run Text="{Binding ModsEnabled}"/>
                         </TextBlock>
-                        <TextBlock Text="Instance folder" Foreground="{DynamicResource OreMutedBrush}" Margin="0,8,0,0"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_instance_folder'}" Foreground="{DynamicResource OreMutedBrush}" Margin="0,8,0,0"/>
                         <DockPanel LastChildFill="True">
                             <Button DockPanel.Dock="Right"
-                                    Content="Open"
+                                    Content="{loc:LocalizerExtensions Key='common_open'}"
                                     MinWidth="88"
                                     Margin="12,0,0,0"
                                     VerticalAlignment="Top"
@@ -46,11 +47,11 @@
                         Padding="14"
                         Opacity="{Binding UpgradeSectionOpacity}">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Bedrock update" FontWeight="SemiBold"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_bedrock_update'}" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding UpgradeHintText}"
                                    TextWrapping="Wrap"
                                    Foreground="{DynamicResource OreMutedBrush}"/>
-                        <Button Content="Update to latest in this channel"
+                        <Button Content="{loc:LocalizerExtensions Key='launcher_instance_settings_update_channel_button'}"
                                 Command="{Binding UpgradeBedrockCommand}"
                                 MinWidth="260"
                                 HorizontalAlignment="Left"
@@ -64,45 +65,45 @@
                         CornerRadius="12"
                         Padding="14">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Linux GDK" FontWeight="SemiBold"/>
-                        <TextBlock Text="Paths saved at install time (raonygamer/umu-launcher, raonygamer/gdk-proton)."
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_linux_gdk'}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_linux_gdk_hint'}"
                                    Foreground="{DynamicResource OreMutedBrush}"
                                    TextWrapping="Wrap"/>
-                        <TextBlock Text="umu-run" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_umu_run'}" Foreground="{DynamicResource OreMutedBrush}"/>
                         <DockPanel LastChildFill="True">
-                            <Button DockPanel.Dock="Right" Content="Open" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                            <Button DockPanel.Dock="Right" Content="{loc:LocalizerExtensions Key='common_open'}" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
                                     Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding LinuxUmuRunPath}"/>
-                            <TextBlock Text="{Binding LinuxUmuRunPath, TargetNullValue='(not configured)'}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding LinuxUmuRunPath, TargetNullValue={loc:LocalizerExtensions Key='common_not_configured'}}" TextWrapping="Wrap"/>
                         </DockPanel>
-                        <TextBlock Text="GDK Proton (PROTONPATH directory)" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_gdk_proton'}" Foreground="{DynamicResource OreMutedBrush}"/>
                         <DockPanel LastChildFill="True">
-                            <Button DockPanel.Dock="Right" Content="Open" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                            <Button DockPanel.Dock="Right" Content="{loc:LocalizerExtensions Key='common_open'}" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
                                     Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding LinuxProtonPath}"/>
-                            <TextBlock Text="{Binding LinuxProtonPath, TargetNullValue='(not configured)'}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding LinuxProtonPath, TargetNullValue={loc:LocalizerExtensions Key='common_not_configured'}}" TextWrapping="Wrap"/>
                         </DockPanel>
-                        <TextBlock Text="WINEPREFIX" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_wineprefix'}" Foreground="{DynamicResource OreMutedBrush}"/>
                         <DockPanel LastChildFill="True">
-                            <Button DockPanel.Dock="Right" Content="Open" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                            <Button DockPanel.Dock="Right" Content="{loc:LocalizerExtensions Key='common_open'}" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
                                     Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding LinuxWinePrefixPath}"/>
-                            <TextBlock Text="{Binding LinuxWinePrefixPath, TargetNullValue='(not configured)'}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding LinuxWinePrefixPath, TargetNullValue={loc:LocalizerExtensions Key='common_not_configured'}}" TextWrapping="Wrap"/>
                         </DockPanel>
                     </StackPanel>
                 </Border>
 
                 <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Bedrock game" FontWeight="SemiBold"/>
-                        <TextBlock Text="Executable and package id (after installation)."
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_bedrock_game'}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_bedrock_game_hint'}"
                                    Foreground="{DynamicResource OreMutedBrush}"
                                    TextWrapping="Wrap"/>
-                        <TextBlock Text="Minecraft.Windows.exe" Foreground="{DynamicResource OreMutedBrush}"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_bedrock_exe_label'}" Foreground="{DynamicResource OreMutedBrush}"/>
                         <DockPanel LastChildFill="True">
-                            <Button DockPanel.Dock="Right" Content="Open" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
+                            <Button DockPanel.Dock="Right" Content="{loc:LocalizerExtensions Key='common_open'}" MinWidth="88" Margin="12,0,0,0" VerticalAlignment="Top"
                                     Command="{Binding OpenInExplorerCommand}" CommandParameter="{Binding BedrockWindowsExecutablePath}"/>
-                            <TextBlock Text="{Binding BedrockWindowsExecutablePath, TargetNullValue='(not installed)'}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding BedrockWindowsExecutablePath, TargetNullValue={loc:LocalizerExtensions Key='common_not_installed'}}" TextWrapping="Wrap"/>
                         </DockPanel>
                         <TextBlock>
-                            <Run Text="Package UUID: " Foreground="{DynamicResource OreMutedBrush}"/>
+                            <Run Text="{loc:LocalizerExtensions Key='common_package_uuid_label'}" Foreground="{DynamicResource OreMutedBrush}"/>
                             <Run Text="{Binding BedrockVersionUuid}"/>
                         </TextBlock>
                     </StackPanel>
@@ -110,18 +111,18 @@
 
                 <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14" IsVisible="{Binding ModsEnabled}">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="LeviLamina" FontWeight="SemiBold"/>
-                        <TextBlock Text="Version installed in this instance (used to validate mod compatibility)."
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_levi_lamina'}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_levi_hint'}"
                                    Foreground="{DynamicResource OreMutedBrush}"
                                    TextWrapping="Wrap"/>
                         <DockPanel LastChildFill="True">
                             <Button DockPanel.Dock="Right"
-                                    Content="Save"
+                                    Content="{loc:LocalizerExtensions Key='common_save'}"
                                     MinWidth="90"
                                     Margin="12,0,0,0"
                                     Command="{Binding SaveLeviLaminaVersionCommand}"/>
                             <TextBox Text="{Binding LeviLaminaVersion}"
-                                     Watermark="e.g. 1.1.0"
+                                     Watermark="{loc:LocalizerExtensions Key='launcher_instance_settings_levi_watermark'}"
                                      MinHeight="34"/>
                         </DockPanel>
                     </StackPanel>
@@ -129,22 +130,22 @@
 
                 <Border Background="{DynamicResource OreSurfaceBrush}" CornerRadius="12" Padding="14" IsVisible="{Binding ModsEnabled}">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Import local mods" FontWeight="SemiBold"/>
-                        <TextBlock Text="Import a local .zip or .dll. Online mod browsing will be added later."
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_import_mods'}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_import_hint'}"
                                    Foreground="{DynamicResource OreMutedBrush}"
                                    TextWrapping="Wrap"/>
-                        <TextBox Text="{Binding ImportPath}" Watermark="/path/to/mod.zip or .dll" MinHeight="34"/>
-                        <TextBox Text="{Binding ImportDisplayName}" Watermark="Optional display name" MinHeight="34"/>
+                        <TextBox Text="{Binding ImportPath}" Watermark="{loc:LocalizerExtensions Key='launcher_instance_settings_import_path_watermark'}" MinHeight="34"/>
+                        <TextBox Text="{Binding ImportDisplayName}" Watermark="{loc:LocalizerExtensions Key='launcher_instance_settings_import_name_watermark'}" MinHeight="34"/>
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Button Content="Import ZIP" Command="{Binding ImportZipCommand}" MinWidth="120"/>
-                            <Button Content="Import DLL" Command="{Binding ImportDllCommand}" MinWidth="120"/>
+                            <Button Content="{loc:LocalizerExtensions Key='launcher_instance_settings_import_zip'}" Command="{Binding ImportZipCommand}" MinWidth="120"/>
+                            <Button Content="{loc:LocalizerExtensions Key='launcher_instance_settings_import_dll'}" Command="{Binding ImportDllCommand}" MinWidth="120"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <StackPanel Spacing="8" IsVisible="{Binding ModsEnabled}">
-                    <TextBlock Text="Installed mods" FontWeight="SemiBold"/>
-                    <TextBlock Text="Enable or disable; files remain on disk."
+                    <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_installed_mods'}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_installed_mods_hint'}"
                                Foreground="{DynamicResource OreMutedBrush}"
                                TextWrapping="Wrap"/>
 
@@ -158,15 +159,18 @@
                                     <DockPanel LastChildFill="False">
                                         <ToggleSwitch DockPanel.Dock="Right"
                                                       IsChecked="{Binding IsEnabled, Mode=TwoWay}"
-                                                      OnContent="On"
-                                                      OffContent="Off"/>
+                                                      OnContent="{loc:LocalizerExtensions Key='common_on'}"
+                                                      OffContent="{loc:LocalizerExtensions Key='common_off'}"/>
                                         <StackPanel Spacing="2">
                                             <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{Binding Version, StringFormat=v{0}}" Foreground="{DynamicResource OreMutedBrush}"/>
+                                            <TextBlock Foreground="{DynamicResource OreMutedBrush}">
+                                                <Run Text="{loc:LocalizerExtensions Key='launcher_game_version_row_v_prefix'}"/>
+                                                <Run Text="{Binding Version}"/>
+                                            </TextBlock>
                                             <TextBlock Text="{Binding GlobalFolderName}" Foreground="{DynamicResource OreMutedBrush}" TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding CompatibilitySummary}"
                                                        Foreground="{DynamicResource OreMutedBrush}"/>
-                                            <TextBlock Text="Requires LeviLamina"
+                                            <TextBlock Text="{loc:LocalizerExtensions Key='launcher_instance_settings_requires_levi'}"
                                                        IsVisible="{Binding RequiresLeviLamina}"
                                                        Foreground="{DynamicResource OreMutedBrush}"/>
                                         </StackPanel>
@@ -182,12 +186,12 @@
         <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,16,0,0">
             <Button Grid.Column="0"
                     HorizontalAlignment="Left"
-                    Content="Back"
+                    Content="{loc:LocalizerExtensions Key='launcher_instance_settings_back'}"
                     MinWidth="120"
                     Command="{Binding BackCommand}"/>
             <Button Grid.Column="2"
                     HorizontalAlignment="Right"
-                    Content="Delete instance"
+                    Content="{loc:LocalizerExtensions Key='launcher_instance_settings_delete_instance'}"
                     MinWidth="160"
                     Foreground="#FFFFE8E8"
                     Background="#88C42B2B"

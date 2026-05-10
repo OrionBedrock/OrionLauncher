@@ -1,0 +1,217 @@
+{
+  "app": {
+    "window_title": "OrionBE Launcher",
+    "brand": "OrionBE"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancelar",
+    "open": "Abrir",
+    "save": "Salvar",
+    "back": "Voltar",
+    "details": "Detalhes",
+    "install": "Instalar",
+    "delete": "Excluir",
+    "name_label": "Nome:",
+    "version_label": "Versão:",
+    "mods_enabled_label": "Mods ativos:",
+    "folder_label": "Pasta:",
+    "package_uuid_label": "UUID do pacote:",
+    "on": "Ligado",
+    "off": "Desligado",
+    "not_configured": "(não configurado)",
+    "not_installed": "(não instalado)",
+    "unknown_version": "desconhecida"
+  },
+  "profile": {
+    "default_name": "Jogador",
+    "sidebar_hint": "Clica para editar o perfil",
+    "sidebar_tooltip": "Nickname, mensagem e foto de perfil",
+    "editor_title": "O teu perfil",
+    "pick_photo": "Escolher foto…",
+    "pick_photo_title": "Escolher imagem de perfil",
+    "remove_photo": "Remover foto",
+    "avatar_hint": "PNG, JPG, WebP ou GIF. O ficheiro fica na pasta cache do OrionBE.",
+    "nickname_label": "Nickname",
+    "nickname_watermark": "Nome na barra lateral (máx. 24 caracteres)",
+    "tagline_label": "Mensagem",
+    "tagline_watermark": "Texto curto por baixo do nickname (máx. 120 caracteres)",
+    "tagline_remaining": "{0} caracteres restantes",
+    "save": "Guardar",
+    "cancel": "Voltar"
+  },
+  "navbar": {
+    "home": "Hub",
+    "play": "Jogar",
+    "instances": "Instâncias",
+    "installations": "Versões",
+    "mods": "Mods",
+    "addons": "Extras",
+    "microsoft": {
+      "account": "Perfil Microsoft",
+      "xbox_live": "Xbox Live"
+    }
+  },
+  "sidebar": {
+    "mods_tooltip": "Explorar mods"
+  },
+  "titles": {
+    "hub": "Minecraft Bedrock adaptado para Linux",
+    "game": "Instâncias",
+    "mods": "Explorar mods",
+    "addons": "Complementos",
+    "settings": "Configurações",
+    "profile": "Perfil"
+  },
+  "hub": {
+    "start": "Começar a explorar",
+    "play": "Jogar",
+    "launching": "A iniciar...",
+    "running": "Em execução",
+    "play_last_instance": "Jogar última instância",
+    "create_new_instance": "Criar nova instância",
+    "install_dependencies": "Instalar dependências",
+    "news": "Novidades",
+    "news_title": "ÚLTIMAS ATUALIZAÇÕES"
+  },
+  "addons": {
+    "placeholder": "Complementos aparecerão aqui em uma atualização futura."
+  },
+  "settings": {
+    "tabs": {
+      "general": "Geral"
+    },
+    "general": {
+      "language": "IDIOMA",
+      "launcher": "CONFIGURAÇÕES DO LAUNCHER",
+      "launcher_keep_the_launcher": "Manter o launcher aberto ao executar o jogo"
+    }
+  },
+  "launcher": {
+    "home": {
+      "instances": "Instâncias",
+      "add_instance": "Adicionar instância"
+    },
+    "add_instance": {
+      "title": "Adicionar instância",
+      "instance_name": "Nome da instância",
+      "watermark_name": "Meu mundo sobrevivência",
+      "game_version": "Versão do jogo",
+      "mode": "Modo",
+      "mode_hint": "Vanilla é o padrão. Ative mods para habilitar o fluxo de instalação de mods nesta instância.",
+      "toggle_mods": "Mods",
+      "toggle_vanilla": "Vanilla",
+      "levi_section": "Carregador LeviLamina",
+      "levi_hint": "Esta versão do jogo é compatível com LeviLamina. Você pode criar a instância com ou sem o carregador.",
+      "levi_with": "Com LeviLamina",
+      "levi_without": "Sem LeviLamina",
+      "levi_support_yes": "Suporte LeviLamina disponível para esta versão do jogo.",
+      "levi_support_no": "LeviLamina não disponível para esta versão do jogo.",
+      "keep_open_on": "Manter janela aberta quando a instalação concluir (revisar logs)",
+      "keep_open_off": "Voltar ao início quando a instalação concluir",
+      "install_log_title": "Log de instalação",
+      "copy_logs": "Copiar logs",
+      "install_log_watermark": "As etapas da instalação aparecem aqui ao criar uma instância.",
+      "status_preparing": "Preparando...",
+      "status_finished": "Instalação concluída com sucesso.",
+      "cancel": "Cancelar",
+      "create": "Criar"
+    },
+    "instance_card": {
+      "mode_modded": "Com mods",
+      "mode_vanilla": "Vanilla",
+      "runtime_none": "Runtime: nenhum",
+      "runtime_levi": "Runtime: LeviLamina {0}",
+      "play": "Jogar",
+      "launching": "Iniciando...",
+      "running": "Em execução...",
+      "settings_tooltip": "Configurações"
+    },
+    "instance_settings": {
+      "title": "Configurações da instância",
+      "summary": "Resumo",
+      "instance_folder": "Pasta da instância",
+      "bedrock_update": "Atualização Bedrock",
+      "update_channel_button": "Atualizar para o mais recente neste canal",
+      "linux_gdk": "Linux GDK",
+      "linux_gdk_hint": "Caminhos salvos na instalação (raonygamer/umu-launcher, raonygamer/gdk-proton).",
+      "umu_run": "umu-run",
+      "gdk_proton": "GDK Proton (diretório PROTONPATH)",
+      "wineprefix": "WINEPREFIX",
+      "bedrock_game": "Jogo Bedrock",
+      "bedrock_game_hint": "Executável e id do pacote (após a instalação).",
+      "bedrock_exe_label": "Minecraft.Windows.exe",
+      "levi_lamina": "LeviLamina",
+      "levi_hint": "Versão instalada nesta instância (usada para validar compatibilidade de mods).",
+      "levi_watermark": "ex.: 1.1.0",
+      "import_mods": "Importar mods locais",
+      "import_hint": "Importe um .zip ou .dll local. Navegação online de mods será adicionada depois.",
+      "import_path_watermark": "/caminho/para/mod.zip ou .dll",
+      "import_name_watermark": "Nome de exibição (opcional)",
+      "import_zip": "Importar ZIP",
+      "import_dll": "Importar DLL",
+      "installed_mods": "Mods instalados",
+      "installed_mods_hint": "Ativar ou desativar; os arquivos permanecem no disco.",
+      "requires_levi": "Requer LeviLamina",
+      "back": "Voltar",
+      "delete_instance": "Excluir instância",
+      "upgrade_hint_newer": "Build {0} mais recente disponível: {1}.",
+      "upgrade_hint_none": "Não há build mais novo neste canal. Estável não avança para preview (e vice-versa); reversões não são oferecidas.",
+      "upgrade_hint_error": "Não foi possível verificar o catálogo Bedrock para atualizações.",
+      "channel_preview": "preview",
+      "channel_stable": "stable"
+    },
+    "browse_mods": {
+      "title": "Explorar mods"
+    },
+    "mod_details": {
+      "title": "Detalhes do mod",
+      "version": "Versão",
+      "screenshots": "Capturas",
+      "screenshots_hint": "Imagens opcionais resolvidas de docs/prints quando presentes junto ao build publicado.",
+      "targets_open": "  (alvo ",
+      "targets_close": ") ",
+      "ll_prefix": "LL: "
+    },
+    "instance_picker": {
+      "title": "Selecionar instância",
+      "prompt": "Escolha uma instância com mods habilitados:",
+      "folder_prefix": "Pasta:",
+      "version_prefix": "Versão:"
+    },
+    "viewlocator": {
+      "unknown_vm": "ViewModel desconhecido: {0}",
+      "view_not_found": "View não encontrada: {0}"
+    },
+    "game_version_row": {
+      "v_prefix": "v"
+    }
+  },
+  "dialogs": {
+    "dependency_check_title": "Verificação de dependências",
+    "dependency_check_intro": "O launcher detectou dependências de runtime ausentes na primeira execução.\n\n",
+    "dependency_check_outro": "\n\nInstale as dependências ausentes e reinicie o OrionBE Launcher.",
+    "delete_instance_title": "Excluir instância",
+    "delete_instance_body": "A pasta e todos os arquivos desta instância serão apagados do disco.\n\n“{0}”\nIsso não pode ser desfeito. Continuar?",
+    "enter_local_path": "Informe o caminho de um arquivo local.",
+    "select_primary_dll_title": "Selecionar DLL principal",
+    "select_primary_dll_body": "Vários arquivos .dll foram encontrados neste ZIP. Escolha o principal usado por este mod:",
+    "fix_mod_layout_title": "Corrigir layout da pasta do mod?",
+    "fix_mod_layout_body": "A estrutura atual coloca arquivos .dll em uma pasta aninhada.\n\nExemplo atual: {0}\nRecomendado: {1}\n\nDeseja que o OrionBE normalize o layout deste ZIP antes de importar?",
+    "instance_updated": "A instância foi atualizada para os arquivos de jogo mais recentes permitidos neste canal.",
+    "version_mismatch_title": "Incompatibilidade de versão",
+    "version_mismatch_body": "A instância está em {0}, mas este mod tem como alvo {1}. Continuar mesmo assim?",
+    "levi_required_title": "LeviLamina obrigatório",
+    "levi_required_body": "Este mod requer LeviLamina, mas a instância não tem uma versão LeviLamina configurada em Configurações da instância.",
+    "levi_mismatch_title": "Incompatibilidade LeviLamina",
+    "levi_mismatch_body": "LeviLamina da instância={0}, intervalo exigido={1}. Continuar mesmo assim?",
+    "mod_installed_title": "Instalado",
+    "mod_installed_body": "O mod foi copiado para a pasta de mods da instância.",
+    "no_modded_instances_title": "Sem instâncias",
+    "no_modded_instances_body": "Não há instâncias com mods habilitados. Habilite mods em uma instância ou crie uma nova com mods.",
+    "umu_exit_body": "O wrapper GDK encerrou com código {0}. Se nada apareceu, anexe logs de instalação ou Proton/Wine ao relatar o problema. Verifique dependências do sistema se os logs de instalação não mostraram erros."
+  },
+  "import": {
+    "default_mod_name": "Mod importado"
+  }
+}

@@ -13,5 +13,8 @@ public interface IUiDialogService
 
     Task<string?> PickOptionAsync(string title, string message, IReadOnlyList<string> options);
 
+    /// <summary>Opens an image file picker; returns a local filesystem path when available.</summary>
+    Task<string?> PickImageFileAsync(CancellationToken cancellationToken = default);
+
     Task<InstanceSummary?> PickModdedInstanceAsync(CancellationToken cancellationToken = default);
 }

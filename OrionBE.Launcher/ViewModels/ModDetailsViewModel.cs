@@ -5,11 +5,12 @@ using CommunityToolkit.Mvvm.Input;
 using OrionBE.Launcher.Core;
 using OrionBE.Launcher.Core.Events;
 using OrionBE.Launcher.Models;
+using OrionBE.Launcher.I18n;
 using OrionBE.Launcher.Services;
 
 namespace OrionBE.Launcher.ViewModels;
 
-public sealed partial class ModDetailsViewModel : ViewModelBase
+public sealed partial class ModDetailsViewModel : ViewModelBase, IDisposable
 {
     private readonly IApiService _apiService;
     private readonly IModService _modService;
@@ -35,13 +36,28 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
         _navigationService = navigationService;
         _uiDialogService = uiDialogService;
         _eventBus = eventBus;
+        Localizer.Instance.CultureChanged += OnLocalizationChanged;
+        HeaderTitle = L("launcher_mod_details_title");
+    }
+
+    public void Dispose()
+    {
+        Localizer.Instance.CultureChanged -= OnLocalizationChanged;
+    }
+
+    private void OnLocalizationChanged(object? sender, EventArgs e)
+    {
+        if (Mod is null)
+        {
+            HeaderTitle = L("launcher_mod_details_title");
+        }
     }
 
     [ObservableProperty]
     private ModCatalogItem? _mod;
 
     [ObservableProperty]
-    private string _headerTitle = "Mod details";
+    private string _headerTitle = "";
 
     [ObservableProperty]
     private ModVersion? _selectedVersion;
@@ -77,8 +93,11 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
         {
             var proceed = await _uiDialogService
                 .ConfirmAsync(
-                    "Version mismatch",
-                    $"The instance is on {target.Config.Version}, but this mod targets {string.Join(", ", supportedVersions)}. Continue anyway?")
+                    L("dialogs_version_mismatch_title"),
+                    LF(
+                        "dialogs_version_mismatch_body",
+                        target.Config.Version,
+                        string.Join(", ", supportedVersions)))
                 .ConfigureAwait(true);
 
             if (!proceed)
@@ -97,8 +116,8 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
             {
                 await _uiDialogService
                     .ShowMessageAsync(
-                        "LeviLamina required",
-                        "This mod requires LeviLamina, but the instance does not have a LeviLamina version configured in Instance Settings.")
+                        L("dialogs_levi_required_title"),
+                        L("dialogs_levi_required_body"))
                     .ConfigureAwait(true);
                 return;
             }
@@ -107,8 +126,11 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
             {
                 var proceed = await _uiDialogService
                     .ConfirmAsync(
-                        "LeviLamina mismatch",
-                        $"Instance LeviLamina={target.Config.LeviLaminaVersion}, required range={SelectedVersion.LeviLaminaVersionRange}. Continue anyway?")
+                        L("dialogs_levi_mismatch_title"),
+                        LF(
+                            "dialogs_levi_mismatch_body",
+                            target.Config.LeviLaminaVersion,
+                            SelectedVersion.LeviLaminaVersionRange))
                     .ConfigureAwait(true);
                 if (!proceed)
                 {
@@ -133,7 +155,7 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
         }
 
         _eventBus.Publish(new InstancesChanged());
-        await _uiDialogService.ShowMessageAsync("Installed", "The mod was copied into the instance mods folder.").ConfigureAwait(true);
+        await _uiDialogService.ShowMessageAsync(L("dialogs_mod_installed_title"), L("dialogs_mod_installed_body")).ConfigureAwait(true);
         _navigationService.GoBack();
     }
 
@@ -151,7 +173,7 @@ public sealed partial class ModDetailsViewModel : ViewModelBase
             Mod = mod;
             if (mod is null)
             {
-                HeaderTitle = "Mod details";
+                HeaderTitle = L("launcher_mod_details_title");
                 return;
             }
 

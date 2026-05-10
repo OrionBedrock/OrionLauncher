@@ -4,13 +4,13 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using OrionBE.Launcher.Composition;
 using OrionBE.Launcher.Services;
-using OrionBE.Launcher.ViewModels;
-using OrionBE.Launcher.Views;
+using OrionBe.Composition;
+using OrionBE.Launcher.I18n;
+using OrionBe.ViewModel;
 using System.Linq;
 
-namespace OrionBE.Launcher;
+namespace OrionBe;
 
 public partial class App : Application
 {
@@ -24,24 +24,28 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        DisableAvaloniaDataAnnotationValidation();
+
+        AppBootstrapper.Bootstrap();
+        _serviceProvider = AppBootstrapper.Services;
+
+        var launcherSettings = _serviceProvider.GetRequiredService<ILauncherSettingsService>().Load();
+        var lang = string.IsNullOrWhiteSpace(launcherSettings.UiLanguage) ? "en-US" : launcherSettings.UiLanguage;
+        Localizer.Instance.LoadLanguage(lang);
+
+        var backgroundQueue = _serviceProvider.GetRequiredService<IBackgroundTaskQueue>();
+        _ = backgroundQueue.RunProcessorAsync(_shutdownCts.Token);
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            DisableAvaloniaDataAnnotationValidation();
-
-            _serviceProvider = AppBootstrapper.CreateServiceProvider();
-
-            var backgroundQueue = _serviceProvider.GetRequiredService<IBackgroundTaskQueue>();
-            _ = backgroundQueue.RunProcessorAsync(_shutdownCts.Token);
-
-            var mainWindow = new MainWindow
+            desktop.MainWindow = new MainWindow
             {
                 DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>(),
             };
 
             var uiDialogs = _serviceProvider.GetRequiredService<IUiDialogService>();
-            uiDialogs.AttachMainWindow(mainWindow);
+            uiDialogs.AttachMainWindow(desktop.MainWindow);
 
-            desktop.MainWindow = mainWindow;
             desktop.Exit += (_, _) => _shutdownCts.Cancel();
 
             _ = RunFirstLaunchDependencyCheckAsync(_serviceProvider, uiDialogs);
@@ -64,10 +68,12 @@ public partial class App : Application
             }
 
             var message =
-                "The launcher detected missing runtime dependencies during first startup.\n\n" +
+                Localizer.Instance["dialogs_dependency_check_intro"] +
                 string.Join('\n', report.MissingItems.Select(static item => $"- {item}")) +
-                "\n\nPlease install the missing dependencies and restart OrionBE Launcher.";
-            await uiDialogs.ShowMessageAsync("Dependency check", message).ConfigureAwait(true);
+                Localizer.Instance["dialogs_dependency_check_outro"];
+            await uiDialogs
+                .ShowMessageAsync(Localizer.Instance["dialogs_dependency_check_title"], message)
+                .ConfigureAwait(true);
         }
         catch
         {

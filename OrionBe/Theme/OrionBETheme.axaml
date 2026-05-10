@@ -1,0 +1,25 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            
+        </Border>
+    </Design.PreviewWith>
+    
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <MergeResourceInclude Source="avares://OrionBe/Theme/Resources/BaseColors.axaml"/>
+                <MergeResourceInclude Source="avares://OrionBe/Theme/Resources/DefaultValues.axaml"/>
+                <MergeResourceInclude Source="avares://OrionBe/Theme/Control/ComboBox/ComboBox.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Styles.Resources>
+    
+    <StyleInclude Source="avares://OrionBe/Theme/Control/ComboBox/ComboBoxItem.axaml"/>
+    <StyleInclude Source="avares://OrionBe/Theme/Control/Button/Button.axaml"/>
+    <StyleInclude Source="avares://OrionBe/Theme/Control/TextBlock/TextBlock.axaml"/>
+    <StyleInclude Source="avares://OrionBe/Theme/Control/ToggleButton/ToggleButton.axaml"/>
+    <StyleInclude Source="avares://OrionBe/Theme/Control/Markdown/Markdown.axaml"/>
+
+</Styles>

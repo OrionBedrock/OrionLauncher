@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:OrionBe.ViewModel.Profile"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
+             xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Background="{DynamicResource Background}"
+             x:DataType="vm:ProfileViewModel"
+             x:Class="OrionBe.View.Profile.ProfileView">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <Border Padding="30,100,30,40" MaxWidth="720">
+            <StackPanel Spacing="22">
+                <TextBlock Classes="Large"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Text="{loc:LocalizerExtensions Key='profile_editor_title'}"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="20">
+                    <Panel Width="96" Height="96">
+                        <Border Width="96"
+                                Height="96"
+                                CornerRadius="12"
+                                ClipToBounds="True"
+                                Background="#1a1918"
+                                IsVisible="{Binding ShowAvatarImage}">
+                            <Image Source="{Binding PreviewAvatar}"
+                                   Stretch="Uniform"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                        </Border>
+                        <Border CornerRadius="12"
+                                Background="#2a2827"
+                                Width="96"
+                                Height="96"
+                                IsVisible="{Binding ShowAvatarPlaceholder}">
+                            <LucideIcon Kind="CircleUser" Width="44" Height="44"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Foreground="#8a8580"/>
+                        </Border>
+                    </Panel>
+                    <StackPanel VerticalAlignment="Center" Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button MinWidth="140"
+                                    Command="{Binding PickPhotoCommand}"
+                                    Content="{loc:LocalizerExtensions Key='profile_pick_photo'}"/>
+                            <Button MinWidth="120"
+                                    Command="{Binding RemovePhotoCommand}"
+                                    Content="{loc:LocalizerExtensions Key='profile_remove_photo'}"/>
+                        </StackPanel>
+                        <TextBlock FontSize="12"
+                                   Foreground="{DynamicResource Foreground2}"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="420"
+                                   Text="{loc:LocalizerExtensions Key='profile_avatar_hint'}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Text="{loc:LocalizerExtensions Key='profile_nickname_label'}"/>
+                    <TextBox Text="{Binding Nickname, Mode=TwoWay}"
+                             MaxLength="24"
+                             Watermark="{loc:LocalizerExtensions Key='profile_nickname_watermark'}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock FontWeight="SemiBold" Text="{loc:LocalizerExtensions Key='profile_tagline_label'}"/>
+                        <TextBlock FontSize="12"
+                                   Foreground="{DynamicResource Foreground2}"
+                                   VerticalAlignment="Bottom"
+                                   Text="{Binding TaglineFooterText}"/>
+                    </StackPanel>
+                    <TextBox Text="{Binding Tagline, Mode=TwoWay}"
+                             MaxLength="120"
+                             AcceptsReturn="True"
+                             Height="72"
+                             TextWrapping="Wrap"
+                             Watermark="{loc:LocalizerExtensions Key='profile_tagline_watermark'}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,16,0,0">
+                    <Button Classes="accent"
+                            MinWidth="120"
+                            Command="{Binding SaveCommand}"
+                            Content="{loc:LocalizerExtensions Key='profile_save'}"/>
+                    <Button MinWidth="120"
+                            Command="{Binding CancelCommand}"
+                            Content="{loc:LocalizerExtensions Key='profile_cancel'}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

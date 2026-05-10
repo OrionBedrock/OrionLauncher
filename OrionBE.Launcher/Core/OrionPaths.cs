@@ -49,4 +49,8 @@ public static class OrionPaths
     /// <summary>Marker file indicating first-launch dependency check has already run.</summary>
     public static string FirstLaunchDependencyCheckMarker =>
         Path.Combine(Root, "first_launch_dependency_check_done.json");
+
+    /// <summary>Persisted launcher UI preferences (language, etc.).</summary>
+    public static string LauncherSettingsFile => Path.Combine(Root, "launcher_settings.json");
+
 }

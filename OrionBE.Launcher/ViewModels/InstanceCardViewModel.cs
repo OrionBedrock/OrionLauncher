@@ -1,6 +1,7 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrionBE.Launcher.I18n;
 using OrionBE.Launcher.Models;
 using OrionBE.Launcher.Services;
 
@@ -23,6 +24,7 @@ public sealed partial class InstanceCardViewModel : ViewModelBase, IDisposable
         _navigation = navigation;
         _gameLaunchService = gameLaunchService;
         _uiDialogService = uiDialogService;
+        Localizer.Instance.CultureChanged += OnLocalizationChanged;
         FolderName = summary.FolderName;
         DisplayName = summary.Config.Name;
         GameVersion = summary.Config.Version;
@@ -41,10 +43,11 @@ public sealed partial class InstanceCardViewModel : ViewModelBase, IDisposable
     public bool IsModded { get; }
     public string? LeviLaminaVersion { get; }
 
-    public string ModeLabel => IsModded ? "Modded" : "Vanilla";
+    public string ModeLabel => IsModded ? L("launcher_instance_card_mode_modded") : L("launcher_instance_card_mode_vanilla");
+
     public string RuntimeLabel => string.IsNullOrWhiteSpace(LeviLaminaVersion)
-        ? "Runtime: none"
-        : $"Runtime: LeviLamina {LeviLaminaVersion}";
+        ? L("launcher_instance_card_runtime_none")
+        : LF("launcher_instance_card_runtime_levi", LeviLaminaVersion);
 
     [ObservableProperty]
     private bool isLaunching;
@@ -56,12 +59,20 @@ public sealed partial class InstanceCardViewModel : ViewModelBase, IDisposable
     public bool IsPlayEnabled => !IsLaunching && !IsGameRunning;
 
     public string PlayButtonText =>
-        IsLaunching ? "Launching..." :
-        IsGameRunning ? "Running..." :
-        "Play";
+        IsLaunching ? L("launcher_instance_card_launching") :
+        IsGameRunning ? L("launcher_instance_card_running") :
+        L("launcher_instance_card_play");
+
+    private void OnLocalizationChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(ModeLabel));
+        OnPropertyChanged(nameof(RuntimeLabel));
+        OnPropertyChanged(nameof(PlayButtonText));
+    }
 
     public void Dispose()
     {
+        Localizer.Instance.CultureChanged -= OnLocalizationChanged;
         try
         {
             _lifetimeCts.Cancel();
@@ -200,7 +211,7 @@ public sealed partial class InstanceCardViewModel : ViewModelBase, IDisposable
         catch (Exception ex)
         {
             // Dialog service marshals to UI thread; do not use ConfigureAwait(false) before this await.
-            await _uiDialogService.ShowMessageAsync("OrionBE", ex.Message);
+            await _uiDialogService.ShowMessageAsync(L("app_brand"), ex.Message);
         }
         finally
         {

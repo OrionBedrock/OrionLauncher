@@ -1,6 +1,8 @@
+using System;
 using Avalonia.Controls;
+using DialogHostAvalonia;
 
-namespace OrionBE.Launcher.Views;
+namespace OrionBe;
 
 public partial class MainWindow : Window
 {

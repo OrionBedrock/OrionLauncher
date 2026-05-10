@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:OrionBe.ViewModel.Settings"
+             xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="using:OrionBE.Launcher.I18n"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Background="{DynamicResource Background}"
+             x:DataType="vm:SettingsViewModel"
+             x:Class="OrionBe.View.SettingsView">
+    <Border Padding="30, 140, 30, 0">
+        <TabControl>
+            <TabItem Header="{loc:LocalizerExtensions Key='settings_tabs_general'}">
+                <ScrollViewer>
+                    <Border Padding="20">
+                        <StackPanel Spacing="30">
+                            <ui:SettingsExpander Header="{loc:LocalizerExtensions Key='settings_general_language'}" Background="Transparent">
+                                <ui:SettingsExpander.Footer>
+                                    <ComboBox Width="260"
+                                              ItemsSource="{Binding Languages}"
+                                              SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                              Background="{DynamicResource Background}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </ui:SettingsExpander.Footer>
+                            </ui:SettingsExpander>
+
+                            <ui:SettingsExpander Header="{loc:LocalizerExtensions Key='settings_general_launcher'}">
+                                <ui:SettingsExpanderItem>
+                                    <CheckBox Content="{loc:LocalizerExtensions Key='settings_general_launcher_keep_the_launcher'}"/>
+                                </ui:SettingsExpanderItem>
+                            </ui:SettingsExpander>
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+
+            </TabItem>
+        </TabControl>
+    </Border>
+
+
+</UserControl>

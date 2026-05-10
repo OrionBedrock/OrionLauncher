@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using OrionBE.Launcher.I18n;
 using OrionBE.Launcher.ViewModels;
 
 namespace OrionBE.Launcher;
@@ -21,16 +22,11 @@ public class ViewLocator : IDataTemplate
             return null;
         }
 
-        if (param is MainWindowViewModel)
-        {
-            return null;
-        }
-
         var vmType = param.GetType();
         var vmName = vmType.Name;
         if (!vmName.EndsWith("ViewModel", StringComparison.Ordinal))
         {
-            return new TextBlock { Text = "Unknown ViewModel: " + vmName };
+            return new TextBlock { Text = Localizer.Instance.Format("launcher_viewlocator_unknown_vm", vmName) };
         }
 
         var viewName = string.Concat(vmName.AsSpan(0, vmName.Length - "ViewModel".Length), "View");
@@ -40,7 +36,7 @@ public class ViewLocator : IDataTemplate
         var resolved = Type.GetType(fullName);
         if (resolved is null)
         {
-            return new TextBlock { Text = "View not found: " + fullName };
+            return new TextBlock { Text = Localizer.Instance.Format("launcher_viewlocator_view_not_found", fullName) };
         }
 
         return (Control)Activator.CreateInstance(resolved)!;

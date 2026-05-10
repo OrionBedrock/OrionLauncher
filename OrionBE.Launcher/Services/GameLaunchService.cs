@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using OrionBE.Launcher.Core;
-
+using OrionBE.Launcher.I18n;
 namespace OrionBE.Launcher.Services;
 
 public sealed class GameLaunchService : IGameLaunchService
@@ -20,18 +20,35 @@ public sealed class GameLaunchService : IGameLaunchService
     private readonly IInstanceService _instanceService;
     private readonly IVcRuntimeService _vcRuntimeService;
     private readonly IUiDialogService _uiDialogs;
+    private readonly ILauncherSettingsService _launcherSettings;
     private readonly ILogger<GameLaunchService> _logger;
 
     public GameLaunchService(
         IInstanceService instanceService,
         IVcRuntimeService vcRuntimeService,
         IUiDialogService uiDialogs,
+        ILauncherSettingsService launcherSettings,
         ILogger<GameLaunchService> logger)
     {
         _instanceService = instanceService;
         _vcRuntimeService = vcRuntimeService;
         _uiDialogs = uiDialogs;
+        _launcherSettings = launcherSettings;
         _logger = logger;
+    }
+
+    private void RememberLastPlayed(string instanceFolderName)
+    {
+        try
+        {
+            var s = _launcherSettings.Load();
+            s.LastPlayedInstanceFolderName = instanceFolderName;
+            _launcherSettings.Save(s);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Could not persist last-played instance.");
+        }
     }
 
     public bool IsInstanceRunning(string instanceFolderName)
@@ -151,6 +168,7 @@ public sealed class GameLaunchService : IGameLaunchService
             AttachLinuxUmuExitNotifier(instanceFolderName, process);
 
             _logger.LogInformation("Game started via umu-run: {Exe}, pid={Pid}", exe, process.Id);
+            RememberLastPlayed(instanceFolderName);
             return;
         }
 
@@ -164,6 +182,7 @@ public sealed class GameLaunchService : IGameLaunchService
                     UseShellExecute = true,
                 });
             _logger.LogInformation("Game started (Windows): {Exe}", exe);
+            RememberLastPlayed(instanceFolderName);
             return;
         }
 
@@ -396,9 +415,8 @@ public sealed class GameLaunchService : IGameLaunchService
                         code,
                         instanceFolderName);
                     _ = _uiDialogs.ShowMessageAsync(
-                        "OrionBE",
-                        $"The GDK launcher wrapper exited with code {code}. If nothing appeared, attach installation logs or Proton/Wine logs when reporting the issue. " +
-                        "Verify system dependencies if installation logs showed no errors.");
+                        Localizer.Instance["app_brand"],
+                        Localizer.Instance.Format("dialogs_umu_exit_body", code));
                 }
                 catch (Exception ex)
                 {

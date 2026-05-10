@@ -1,0 +1,194 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:dialog="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+        xmlns:loc="using:OrionBE.Launcher.I18n"
+        xmlns:conversions="clr-namespace:OrionBe.Conversions"
+        xmlns:lucide="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
+        xmlns:vm="clr-namespace:OrionBe.ViewModel"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="OrionBe.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{loc:LocalizerExtensions Key='app_window_title'}"
+        MinWidth="1080"
+        MinHeight="640"
+        WindowStartupLocation="CenterScreen">
+    <Border>
+        <Grid ColumnDefinitions="248,*">
+            <!-- Barra lateral estilo launcher oficial: perfil + navegação ícone+texto -->
+            <Border Grid.Column="0"
+                    Background="#141312"
+                    BorderBrush="#2a2827"
+                    BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Perfil local: nickname + mensagem + avatar em cache -->
+                    <Border Padding="16,22,16,22" BorderBrush="#2a2827" BorderThickness="0,0,0,1">
+                        <Button Background="Transparent"
+                                BorderThickness="0"
+                                Padding="0"
+                                Cursor="Hand"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                ToolTip.Tip="{Binding ProfileAreaToolTip}"
+                                Command="{Binding OpenProfileEditorCommand}">
+                            <Grid ColumnDefinitions="48,*"
+                                  ColumnSpacing="14"
+                                  VerticalAlignment="Center"
+                                  MinHeight="48">
+                                <Panel Grid.Column="0" Width="48" Height="48">
+                                    <Border Width="48"
+                                            Height="48"
+                                            CornerRadius="8"
+                                            ClipToBounds="True"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Background="#1a1918"
+                                            IsVisible="{Binding ShowProfileAvatarImage}">
+                                        <Image Source="{Binding ProfileSidebarAvatar}"
+                                               Stretch="Uniform"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border CornerRadius="8"
+                                            Background="#2a2827"
+                                            Width="48"
+                                            Height="48"
+                                            IsVisible="{Binding ShowProfilePlaceholder}">
+                                        <LucideIcon Kind="CircleUser" Width="28" Height="28"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="#8a8580"/>
+                                    </Border>
+                                </Panel>
+                                <StackPanel Grid.Column="1"
+                                            MinWidth="132"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            Spacing="4">
+                                    <TextBlock Classes="Large"
+                                               Text="{Binding ProfilePrimaryLabel}"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="NoWrap"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding ProfileSecondaryLabel}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource Foreground2}"
+                                               TextWrapping="NoWrap"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </Border>
+
+                    <!-- Itens principais -->
+                    <ScrollViewer Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="10,12,10,8" Spacing="4">
+                            <Border CornerRadius="4"
+                                    Padding="0"
+                                    Background="{Binding IsActiveHome, Converter={StaticResource SidebarSelBg}}">
+                                <Button Classes="NavRailFlat"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding NavigatePageCommand}"
+                                        CommandParameter="hub">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <LucideIcon Kind="House" Width="20" Height="20" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{loc:LocalizerExtensions Key='navbar_home'}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Border>
+
+                            <Border CornerRadius="4"
+                                    Padding="0"
+                                    Background="{Binding IsActiveGame, Converter={StaticResource SidebarSelBg}}">
+                                <Button Classes="NavRailFlat"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding NavigatePageCommand}"
+                                        CommandParameter="game">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <LucideIcon Kind="Layers" Width="20" Height="20" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{loc:LocalizerExtensions Key='navbar_instances'}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Border>
+
+                            <Border CornerRadius="4"
+                                    Padding="0"
+                                    Background="{Binding IsActiveMods, Converter={StaticResource SidebarSelBg}}">
+                                <Button Classes="NavRailFlat"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding NavigatePageCommand}"
+                                        CommandParameter="mods">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <LucideIcon Kind="Boxes" Width="20" Height="20" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{loc:LocalizerExtensions Key='navbar_mods'}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Rodapé: definições -->
+                    <Border Grid.Row="2"
+                            Padding="10,8,10,16"
+                            BorderBrush="#2a2827"
+                            BorderThickness="0,1,0,0">
+                        <Border CornerRadius="4"
+                                Padding="0"
+                                Background="{Binding IsActiveSettings, Converter={StaticResource SidebarSelBg}}">
+                            <Button Classes="NavRailFlat"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding NavigateSettingsCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <LucideIcon Kind="Settings2" Width="20" Height="20" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{loc:LocalizerExtensions Key='titles_settings'}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Conteúdo + GitHub no canto superior direito (Stretch para o Hub ter altura limitada e ScrollViewer funcionar) -->
+            <Grid Grid.Column="1">
+                <ContentControl Content="{Binding Control}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch" />
+
+                <dialog:DialogHost Identifier="Config"/>
+
+                <Button Classes="Icon"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="16,18,16,0"
+                        Width="44"
+                        Height="44"
+                        Padding="0"
+                        Background="Transparent"
+                        ZIndex="50"
+                        ToolTip.Tip="GitHub"
+                        Command="{Binding OpenGitHubCommand}">
+                    <LucideIcon Kind="Github" Width="22" Height="22"/>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+
+    <Window.Resources>
+        <conversions:NotConversion x:Key="NotConversion"/>
+        <SolidColorBrush x:Key="SidebarRowActive" Color="#333333"/>
+        <SolidColorBrush x:Key="SidebarRowInactive" Color="#00000000"/>
+        <conversions:BoolToBrushConverter x:Key="SidebarSelBg"
+                                          TrueBrush="{StaticResource SidebarRowActive}"
+                                          FalseBrush="{StaticResource SidebarRowInactive}"/>
+    </Window.Resources>
+</Window>

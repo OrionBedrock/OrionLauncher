@@ -1,15 +1,16 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:OrionBE.Launcher.I18n"
         xmlns:vm="using:OrionBE.Launcher.ViewModels"
         xmlns:models="using:OrionBE.Launcher.Models"
         x:Class="OrionBE.Launcher.Views.InstancePickerWindow"
         x:DataType="vm:InstancePickerViewModel"
         Width="520"
         Height="420"
-        Title="Select instance">
+        Title="{loc:LocalizerExtensions Key='launcher_instance_picker_title'}">
 
     <Grid RowDefinitions="Auto,*,Auto" Margin="16">
-        <TextBlock Grid.Row="0" Text="Choose a mod-enabled instance:" TextWrapping="Wrap" Margin="0,0,0,12"/>
+        <TextBlock Grid.Row="0" Text="{loc:LocalizerExtensions Key='launcher_instance_picker_prompt'}" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
         <ListBox Grid.Row="1"
                  ItemsSource="{Binding Instances}"
@@ -19,9 +20,10 @@
                     <StackPanel Spacing="4">
                         <TextBlock Text="{Binding Config.Name}" FontWeight="SemiBold"/>
                         <TextBlock Foreground="{DynamicResource OreMutedBrush}">
-                            <Run Text="Folder:"/>
+                            <Run Text="{loc:LocalizerExtensions Key='launcher_instance_picker_folder_prefix'}"/>
                             <Run Text="{Binding FolderName}"/>
-                            <Run Text="  Version:"/>
+                            <Run Text="  "/>
+                            <Run Text="{loc:LocalizerExtensions Key='launcher_instance_picker_version_prefix'}"/>
                             <Run Text="{Binding Config.Version}"/>
                         </TextBlock>
                     </StackPanel>
@@ -30,8 +32,8 @@
         </ListBox>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
-            <Button Content="Cancel" Click="Cancel_Click" MinWidth="96"/>
-            <Button Content="OK" Click="Ok_Click" MinWidth="96" IsDefault="True"/>
+            <Button Content="{loc:LocalizerExtensions Key='common_cancel'}" Click="Cancel_Click" MinWidth="96"/>
+            <Button Content="{loc:LocalizerExtensions Key='common_ok'}" Click="Ok_Click" MinWidth="96" IsDefault="True"/>
         </StackPanel>
     </Grid>
 </Window>
