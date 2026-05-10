@@ -17,6 +17,8 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
     private readonly IAppEventBus _appEventBus;
     private readonly IFileExplorerService _fileExplorerService;
     private readonly IModService _modService;
+    private readonly IBedrockVersionCatalogService _bedrockCatalog;
+    private readonly IInstallationService _installationService;
 
     public ObservableCollection<InstanceModRowViewModel> ModRows { get; } = new();
 
@@ -26,7 +28,9 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
         IUiDialogService uiDialogService,
         IAppEventBus appEventBus,
         IFileExplorerService fileExplorerService,
-        IModService modService)
+        IModService modService,
+        IBedrockVersionCatalogService bedrockCatalog,
+        IInstallationService installationService)
     {
         _instanceService = instanceService;
         _navigationService = navigationService;
@@ -34,6 +38,8 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
         _appEventBus = appEventBus;
         _fileExplorerService = fileExplorerService;
         _modService = modService;
+        _bedrockCatalog = bedrockCatalog;
+        _installationService = installationService;
     }
 
     [ObservableProperty]
@@ -74,6 +80,17 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _importDisplayName = string.Empty;
+
+    [ObservableProperty]
+    private bool _canUpgradeBedrock;
+
+    [ObservableProperty]
+    private bool _isUpgradingBedrock;
+
+    [ObservableProperty]
+    private string _upgradeHintText = string.Empty;
+
+    public double UpgradeSectionOpacity => CanUpgradeBedrock ? 1.0 : 0.45;
 
     public bool ShowLinuxGdkSection => OperatingSystem.IsLinux();
 
@@ -171,7 +188,7 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
 
         if (string.IsNullOrWhiteSpace(ImportPath))
         {
-            await _uiDialogService.ShowMessageAsync("OrionBE", "Informe um caminho de arquivo local.").ConfigureAwait(true);
+            await _uiDialogService.ShowMessageAsync("OrionBE", "Enter a path to a local file.").ConfigureAwait(true);
             return;
         }
 
@@ -290,6 +307,72 @@ public sealed partial class InstanceSettingsViewModel : ViewModelBase
                 ModRows.Add(row);
             }
         });
+
+        await RefreshUpgradeEligibilityAsync(summary.Config.Version).ConfigureAwait(false);
+    }
+
+    private async Task RefreshUpgradeEligibilityAsync(string currentVersionLabel)
+    {
+        try
+        {
+            var next = await _bedrockCatalog.TryGetLatestUpgradeInSameChannelAsync(currentVersionLabel).ConfigureAwait(false);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                CanUpgradeBedrock = next is not null;
+                UpgradeHintText = next is not null
+                    ? $"Newer {ChannelKindLabel(next)} build available: {next.DropdownLabel}."
+                    : "No newer build in this channel. Stable does not move to preview (and vice versa); downgrades are not offered.";
+                UpgradeBedrockCommand.NotifyCanExecuteChanged();
+            });
+        }
+        catch
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                CanUpgradeBedrock = false;
+                UpgradeHintText = "Could not check the Bedrock catalog for updates.";
+                UpgradeBedrockCommand.NotifyCanExecuteChanged();
+            });
+        }
+    }
+
+    private static string ChannelKindLabel(BedrockVersionEntry entry) =>
+        string.Equals(entry.Type, "preview", StringComparison.OrdinalIgnoreCase) ? "preview" : "stable";
+
+    [RelayCommand(CanExecute = nameof(CanRunBedrockUpgrade))]
+    private async Task UpgradeBedrockAsync()
+    {
+        IsUpgradingBedrock = true;
+        try
+        {
+            await _installationService.UpgradeInstanceToLatestEligibleAsync(FolderName, progress: null).ConfigureAwait(false);
+            await _uiDialogService
+                .ShowMessageAsync("OrionBE", "The instance was updated to the latest game files allowed for this channel.")
+                .ConfigureAwait(true);
+            _appEventBus.Publish(new InstancesChanged());
+            await LoadAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            await _uiDialogService.ShowMessageAsync("OrionBE", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsUpgradingBedrock = false;
+        }
+    }
+
+    private bool CanRunBedrockUpgrade() => CanUpgradeBedrock && !IsUpgradingBedrock;
+
+    partial void OnCanUpgradeBedrockChanged(bool value)
+    {
+        UpgradeBedrockCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(UpgradeSectionOpacity));
+    }
+
+    partial void OnIsUpgradingBedrockChanged(bool value)
+    {
+        UpgradeBedrockCommand.NotifyCanExecuteChanged();
     }
 
     private async Task SyncAllModDeploymentsAsync(InstanceSummary summary)

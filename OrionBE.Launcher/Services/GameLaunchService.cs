@@ -8,20 +8,29 @@ namespace OrionBE.Launcher.Services;
 
 public sealed class GameLaunchService : IGameLaunchService
 {
+    /// <summary>
+    /// Spacewar — Valve's conventional placeholder Steam App ID for Proton outside the Steam client.
+    /// Without a numeric ID, Proton often logs <c>SteamGameId: default</c>.
+    /// </summary>
+    private const string NonSteamProtonPlaceholderAppId = "480";
+
     private static readonly Lock ActiveLaunchesLock = new();
     private static readonly HashSet<string> ActiveLaunches = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly IInstanceService _instanceService;
     private readonly IVcRuntimeService _vcRuntimeService;
+    private readonly IUiDialogService _uiDialogs;
     private readonly ILogger<GameLaunchService> _logger;
 
     public GameLaunchService(
         IInstanceService instanceService,
         IVcRuntimeService vcRuntimeService,
+        IUiDialogService uiDialogs,
         ILogger<GameLaunchService> logger)
     {
         _instanceService = instanceService;
         _vcRuntimeService = vcRuntimeService;
+        _uiDialogs = uiDialogs;
         _logger = logger;
     }
 
@@ -35,7 +44,7 @@ public sealed class GameLaunchService : IGameLaunchService
             }
         }
 
-        return TryDetectExistingInstanceProcess(instanceFolderName);
+        return TryDetectExistingGameProcess(instanceFolderName);
     }
 
     public async Task LaunchInstanceAsync(string instanceFolderName, CancellationToken cancellationToken = default)
@@ -50,7 +59,7 @@ public sealed class GameLaunchService : IGameLaunchService
 
         try
         {
-            if (TryDetectExistingInstanceProcess(instanceFolderName))
+            if (TryDetectExistingGameProcess(instanceFolderName))
             {
                 throw new InvalidOperationException("This instance is already running.");
             }
@@ -128,18 +137,20 @@ public sealed class GameLaunchService : IGameLaunchService
                 psi.Environment["WINEPREFIX"] = summary.Config.LinuxWinePrefixPath!;
             }
 
-            ApplyLinuxCompatibilityEnvironment(summary.Config, psi);
-            if (summary.Config.CollectLaunchDiagnostics)
-            {
-                psi.RedirectStandardOutput = true;
-                psi.RedirectStandardError = true;
-            }
+            ApplyLinuxProtonBaselineEnvironment(psi);
+
+            // After all env mutations: ensure umu is invoked with Steam identity on argv when possible.
+            ConfigureLinuxUmuInvocation(psi, umu, exe);
+
             var process = Process.Start(psi);
-            if (process is not null && summary.Config.CollectLaunchDiagnostics)
+            if (process is null)
             {
-                _ = StartLaunchDiagnosticsCaptureAsync(instanceFolderName, process);
+                throw new InvalidOperationException("Could not start umu-run (Process.Start returned null).");
             }
-            _logger.LogInformation("Game started via umu-run: {Exe}", exe);
+
+            AttachLinuxUmuExitNotifier(instanceFolderName, process);
+
+            _logger.LogInformation("Game started via umu-run: {Exe}, pid={Pid}", exe, process.Id);
             return;
         }
 
@@ -192,13 +203,23 @@ public sealed class GameLaunchService : IGameLaunchService
         }
     }
 
-    private static bool TryDetectExistingInstanceProcess(string instanceFolderName)
+    private static bool TryDetectExistingGameProcess(string instanceFolderName)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            return false;
+            return TryDetectExistingGameProcessLinux(instanceFolderName);
         }
 
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return TryDetectExistingGameProcessWindows(instanceFolderName);
+        }
+
+        return false;
+    }
+
+    private static bool TryDetectExistingGameProcessLinux(string instanceFolderName)
+    {
         var needle = $"instances/{instanceFolderName}";
         foreach (var process in Process.GetProcesses())
         {
@@ -216,7 +237,7 @@ public sealed class GameLaunchService : IGameLaunchService
                     continue;
                 }
 
-                var cmdline = System.Text.Encoding.UTF8.GetString(raw).Replace('\0', ' ');
+                var cmdline = Encoding.UTF8.GetString(raw).Replace('\0', ' ');
                 if (!cmdline.Contains(needle, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
@@ -238,67 +259,160 @@ public sealed class GameLaunchService : IGameLaunchService
         return false;
     }
 
-    private void ApplyLinuxCompatibilityEnvironment(Models.InstanceConfig config, ProcessStartInfo psi)
+    private static bool TryDetectExistingGameProcessWindows(string instanceFolderName)
+    {
+        var gameRoot = Path.GetFullPath(OrionPaths.InstanceGame(instanceFolderName));
+        try
+        {
+            foreach (var proc in Process.GetProcessesByName("Minecraft.Windows"))
+            {
+                try
+                {
+                    string path;
+                    try
+                    {
+                        path = proc.MainModule?.FileName ?? "";
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        continue;
+                    }
+
+                    if (IsPathUnderDirectory(Path.GetFullPath(path), gameRoot))
+                    {
+                        return true;
+                    }
+                }
+                finally
+                {
+                    proc.Dispose();
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        return false;
+    }
+
+    private static bool IsPathUnderDirectory(string filePath, string directoryRoot)
+    {
+        try
+        {
+            var root = Path.GetFullPath(directoryRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var file = Path.GetFullPath(filePath);
+            return file.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                || file.StartsWith(root + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(file, root, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static void ApplyLinuxProtonBaselineEnvironment(ProcessStartInfo psi)
     {
         if (!OperatingSystem.IsLinux())
         {
             return;
         }
 
-        if (config.EnableGnomeCompatibilityProfile)
+        // STEAM_COMPAT_APP_ID is what pressure-vessel / some Proton entry points read in addition
+        // to SteamAppId/SteamGameId.
+        var id = NonSteamProtonPlaceholderAppId;
+        psi.Environment["SteamAppId"] = id;
+        psi.Environment["SteamGameId"] = id;
+        psi.Environment["STEAM_COMPAT_APP_ID"] = id;
+    }
+
+    /// <summary>
+    /// umu/pressure-vessel may not forward the full parent environment; prefixing
+    /// <c>/usr/bin/env SteamAppId=… SteamGameId=… STEAM_COMPAT_APP_ID=… umu-run …</c> forces
+    /// the identity on the direct child so Proton logs show a numeric SteamGameId.
+    /// </summary>
+    private static void ConfigureLinuxUmuInvocation(ProcessStartInfo psi, string umuPath, string exePath)
+    {
+        if (!OperatingSystem.IsLinux())
         {
-            // Temporary profile while collecting evidence for GNOME/Zorin focus/minimize issues.
-            psi.Environment["WINE_FULLSCREEN_PAUSE_ON_FOCUS_LOSS"] = "0";
-            psi.Environment["PROTON_LOG"] = "1";
-            psi.Environment["PROTON_LOG_DIR"] = OrionPaths.Root;
+            return;
         }
 
-        if (config.UseX11Fallback)
+        const string envBinary = "/usr/bin/env";
+        var id = NonSteamProtonPlaceholderAppId;
+
+        if (File.Exists(envBinary))
         {
-            // Best-effort X11 forcing for session/compositor compatibility testing.
-            psi.Environment["PROTON_ENABLE_WAYLAND"] = "0";
-            psi.Environment["SDL_VIDEODRIVER"] = "x11";
-            psi.Environment["GDK_BACKEND"] = "x11";
+            psi.FileName = envBinary;
+            psi.ArgumentList.Clear();
+            psi.ArgumentList.Add($"SteamAppId={id}");
+            psi.ArgumentList.Add($"SteamGameId={id}");
+            psi.ArgumentList.Add($"STEAM_COMPAT_APP_ID={id}");
+            psi.ArgumentList.Add(umuPath);
+            psi.ArgumentList.Add(exePath);
+        }
+        else
+        {
+            psi.FileName = umuPath;
+            psi.ArgumentList.Clear();
+            psi.ArgumentList.Add(exePath);
         }
     }
 
-    private async Task StartLaunchDiagnosticsCaptureAsync(string instanceFolderName, Process process)
+    private void AttachLinuxUmuExitNotifier(string instanceFolderName, Process process)
     {
         try
         {
-            var logsDir = Path.Combine(OrionPaths.InstanceRoot(instanceFolderName), "logs");
-            Directory.CreateDirectory(logsDir);
-            var logPath = Path.Combine(logsDir, $"launch-{DateTime.UtcNow:yyyyMMdd-HHmmss}.log");
-            await using var output = new FileStream(logPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
-            await using var writer = new StreamWriter(output, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-
-            await writer.WriteLineAsync($"[orion] launch diagnostics started at {DateTime.UtcNow:O}");
-            await writer.WriteLineAsync($"[orion] pid={process.Id}");
-            await writer.FlushAsync();
-
-            var outTask = process.StandardOutput.ReadToEndAsync();
-            var errTask = process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync().ConfigureAwait(false);
-            var stdout = await outTask.ConfigureAwait(false);
-            var stderr = await errTask.ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(stdout))
+            var notified = 0;
+            void NotifyIfFailed()
             {
-                await writer.WriteLineAsync("[stdout]");
-                await writer.WriteLineAsync(stdout.Trim());
+                try
+                {
+                    process.Refresh();
+                    if (!process.HasExited)
+                    {
+                        return;
+                    }
+
+                    var code = process.ExitCode;
+                    if (code == 0)
+                    {
+                        return;
+                    }
+
+                    if (Interlocked.Exchange(ref notified, 1) != 0)
+                    {
+                        return;
+                    }
+
+                    _logger.LogWarning(
+                        "umu-run exited with non-zero code {Code} (instance {Instance})",
+                        code,
+                        instanceFolderName);
+                    _ = _uiDialogs.ShowMessageAsync(
+                        "OrionBE",
+                        $"The GDK launcher wrapper exited with code {code}. If nothing appeared, attach installation logs or Proton/Wine logs when reporting the issue. " +
+                        "Verify system dependencies if installation logs showed no errors.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Linux umu exit notifier failed.");
+                }
             }
 
-            if (!string.IsNullOrWhiteSpace(stderr))
-            {
-                await writer.WriteLineAsync("[stderr]");
-                await writer.WriteLineAsync(stderr.Trim());
-            }
-
-            await writer.WriteLineAsync($"[orion] exit_code={process.ExitCode}");
+            process.EnableRaisingEvents = true;
+            process.Exited += (_, _) => NotifyIfFailed();
+            NotifyIfFailed();
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Launch diagnostics capture failed.");
+            _logger.LogDebug(ex, "AttachLinuxUmuExitNotifier failed.");
         }
     }
 }

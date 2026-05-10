@@ -3,8 +3,8 @@ using System.IO.Compression;
 namespace OrionBE.Launcher.Core;
 
 /// <summary>
-/// Extrai a DLL do libcurl dos zips oficiais Windows (curl.se / curl-for-win).
-/// Builds recentes usam <c>bin/libcurl-x64.dll</c>; pacotes MSYS2/antigos usavam <c>bin/libcurl-4.dll</c>.
+/// Extracts libcurl DLLs from official Windows zip bundles (curl.se / curl-for-win).
+/// Recent builds use <c>bin/libcurl-x64.dll</c>; older MSYS2 packages used <c>bin/libcurl-4.dll</c>.
 /// </summary>
 public static class LibcurlZipExtractor
 {
@@ -15,7 +15,7 @@ public static class LibcurlZipExtractor
         if (entry is null)
         {
             throw new InvalidOperationException(
-                "Não foi encontrado libcurl no zip (esperado bin/libcurl-4.dll ou bin/libcurl-x64.dll, ou outro bin/libcurl-*.dll).");
+                "libcurl was not found in the zip (expected bin/libcurl-4.dll or bin/libcurl-x64.dll, or another bin/libcurl-*.dll).");
         }
 
         using var input = entry.Open();
@@ -23,7 +23,7 @@ public static class LibcurlZipExtractor
         input.CopyTo(output);
     }
 
-    /// <summary>Para testes e diagnóstico.</summary>
+    /// <summary>For tests and diagnostics.</summary>
     public static ZipArchiveEntry? FindLibcurlDllEntry(ZipArchive zip)
     {
         ZipArchiveEntry? best = null;
@@ -73,7 +73,7 @@ public static class LibcurlZipExtractor
         return !string.IsNullOrEmpty(fileName);
     }
 
-    /// <summary>Maior = melhor. Zero = ignorar.</summary>
+    /// <summary>Higher score wins. Zero means ignore.</summary>
     private static int ScoreLibcurlDllName(string fileName)
     {
         if (!fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))

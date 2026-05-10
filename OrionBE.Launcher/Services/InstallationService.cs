@@ -150,7 +150,102 @@ public sealed class InstallationService : IInstallationService
             Report("Skipping Proton/UMU (not Linux)", 0.1);
         }
 
-        Report("Fetching XVDTool (github.com/AmethystAPI/xvdtool)", 0.14);
+        var exe = await DeployBedrockCatalogEntryAsync(instanceFolderName, entry, config, Report, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (modsEnabled)
+        {
+            _eventBus.Publish(new InstallationExtrasStep("Mods enabled: extra hooks remain mock."));
+            await Task.Delay(150, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (installLeviLamina && !string.IsNullOrWhiteSpace(config.LeviLaminaVersion))
+        {
+            Report("Installing LeviLamina via LIP", 0.94);
+            await InstallLeviLaminaAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
+            Report("LeviLamina installed and verified", 0.98);
+        }
+
+        Report("Done", 1);
+        _eventBus.Publish(new InstancesChanged());
+        _logger.LogInformation("Instance {Folder} installed ({Version}, exe={Exe})", instanceFolderName, config.Version, exe);
+    }
+
+    public async Task UpgradeInstanceToLatestEligibleAsync(
+        string instanceFolderName,
+        IProgress<(string Step, double Progress01)>? progress,
+        CancellationToken cancellationToken = default)
+    {
+        await _instanceService.EnsureLauncherLayoutAsync(cancellationToken).ConfigureAwait(false);
+
+        var summary = await _instanceService.GetAsync(instanceFolderName, cancellationToken).ConfigureAwait(false);
+        if (summary is null)
+        {
+            throw new InvalidOperationException("Instance not found.");
+        }
+
+        void Report(string step, double p01)
+        {
+            progress?.Report((step, p01));
+            _eventBus.Publish(new InstallationProgressChanged(step, p01));
+            UiLog(step);
+        }
+
+        Report("Checking Bedrock catalog for a newer build (same channel)", 0.02);
+        var target = await _bedrockCatalog.TryGetLatestUpgradeInSameChannelAsync(summary.Config.Version, cancellationToken).ConfigureAwait(false);
+        if (target is null)
+        {
+            throw new InvalidOperationException(
+                "No newer version is available for this channel. Stable builds only update to newer stable builds; preview builds only update within preview.");
+        }
+
+        Report($"Updating game files to {target.DropdownLabel}", 0.06);
+
+        if (OperatingSystem.IsLinux() && _gdkLinuxRuntimeService.IsSupported)
+        {
+            var needGdk = string.IsNullOrWhiteSpace(summary.Config.LinuxUmuRunPath) || !File.Exists(summary.Config.LinuxUmuRunPath)
+                || string.IsNullOrWhiteSpace(summary.Config.LinuxProtonPath) || !Directory.Exists(summary.Config.LinuxProtonPath!);
+            if (needGdk)
+            {
+                Report("Installing GDK Proton + UMU (required for this instance)", 0.08);
+                var gdkProgress = new Progress<(string Step, double Progress01)>(p =>
+                {
+                    progress?.Report(p);
+                    _eventBus.Publish(new InstallationProgressChanged(p.Step, p.Progress01));
+                    UiLog(p.Step);
+                });
+                var gdk = await _gdkLinuxRuntimeService.EnsureRuntimeAsync(gdkProgress, cancellationToken).ConfigureAwait(false);
+                if (gdk is not null)
+                {
+                    summary.Config.LinuxUmuRunPath = gdk.UmuRunPath;
+                    summary.Config.LinuxProtonPath = gdk.ProtonDirectoryPath;
+                    await _instanceService.SaveConfigAsync(instanceFolderName, summary.Config, cancellationToken).ConfigureAwait(false);
+                    Report("Linux runtime saved to instance config", 0.12);
+                }
+                else
+                {
+                    Report("Linux GDK runtime failed or was skipped (see logs)", 0.12);
+                }
+            }
+        }
+
+        await DeployBedrockCatalogEntryAsync(instanceFolderName, target, summary.Config, Report, cancellationToken).ConfigureAwait(false);
+
+        await RedeployEnabledModsToGameFolderAsync(instanceFolderName, summary.Config, cancellationToken).ConfigureAwait(false);
+
+        Report("Update finished", 1);
+        _eventBus.Publish(new InstancesChanged());
+        _logger.LogInformation("Instance {Folder} upgraded to {Version}", instanceFolderName, summary.Config.Version);
+    }
+
+    private async Task<string> DeployBedrockCatalogEntryAsync(
+        string instanceFolderName,
+        BedrockVersionEntry entry,
+        InstanceConfig config,
+        Action<string, double> report,
+        CancellationToken cancellationToken)
+    {
+        report("Fetching XVDTool (github.com/AmethystAPI/xvdtool)", 0.14);
         var xvdtool = await _xvdToolService.EnsureToolAsync(cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrEmpty(xvdtool))
         {
@@ -161,20 +256,20 @@ public sealed class InstallationService : IInstallationService
         var cachedMsixvc = Path.Combine(OrionPaths.BedrockMsixvcCacheDir, $"Minecraft-{entry.Version}.msixvc");
         var workDir = Path.Combine(OrionPaths.Cache, "bedrock_work");
         await _fileSystem.EnsureDirectoryAsync(workDir, cancellationToken).ConfigureAwait(false);
-        var workMsixvc = Path.Combine(workDir, $"{instanceFolderName}.msixvc");
+        var workMsixvc = Path.Combine(workDir, $"{instanceFolderName}_{Guid.NewGuid():N}.msixvc");
 
         using (await BedrockInstallLock.AcquireAsync(entry.Version, cancellationToken).ConfigureAwait(false))
         {
-            Report("Choosing mirror and downloading .msixvc", 0.18);
-            await EnsureMsixvcPresentAsync(entry, cachedMsixvc, p => Report("Downloading .msixvc", 0.18 + p * 0.42), cancellationToken)
+            report("Choosing mirror and downloading .msixvc", 0.18);
+            await EnsureMsixvcPresentAsync(entry, cachedMsixvc, p => report("Downloading .msixvc", 0.18 + p * 0.42), cancellationToken)
                 .ConfigureAwait(false);
 
-            Report("Preparing working copy of package", 0.62);
+            report("Preparing working copy of package", 0.62);
             await Task.Run(() => File.Copy(cachedMsixvc, workMsixvc, overwrite: true), cancellationToken).ConfigureAwait(false);
 
             try
             {
-                Report("Decrypting package (CIK)", 0.66);
+                report("Decrypting package (CIK)", 0.66);
                 UiLog("CIK: decrypting .msixvc with available CIK keys (trying each key).");
                 await _xvdToolService.DecryptMsixvcInPlaceAsync(xvdtool, workMsixvc, cancellationToken).ConfigureAwait(false);
                 UiLog("CIK: decryption finished successfully.");
@@ -187,7 +282,7 @@ public sealed class InstallationService : IInstallationService
 
                 await _fileSystem.EnsureDirectoryAsync(gameDir, cancellationToken).ConfigureAwait(false);
 
-                Report("Extracting game files", 0.72);
+                report("Extracting game files", 0.72);
                 UiLog($"Extracting package contents to {gameDir}");
                 await _xvdToolService.ExtractMsixvcAsync(xvdtool, workMsixvc, gameDir, cancellationToken).ConfigureAwait(false);
                 UiLog("Package extraction finished.");
@@ -208,7 +303,7 @@ public sealed class InstallationService : IInstallationService
             }
         }
 
-        Report("Locating Minecraft.Windows.exe", 0.88);
+        report("Locating Minecraft.Windows.exe", 0.88);
         var exe = BedrockGameLayout.FindWindowsExecutable(OrionPaths.InstanceGame(instanceFolderName));
         if (string.IsNullOrEmpty(exe))
         {
@@ -218,18 +313,20 @@ public sealed class InstallationService : IInstallationService
 
         await _vcRuntimeService.EnsureForGameAsync(OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
             .ConfigureAwait(false);
-        Report("Copying combase.dll to game executable folder", 0.862);
+        report("Copying combase.dll to game executable folder", 0.862);
         await EnsureCombaseDllForGameAsync(OrionPaths.InstanceGame(instanceFolderName), exe, cancellationToken)
             .ConfigureAwait(false);
 
-        var winePrefixPath = Path.Combine(OrionPaths.InstanceRoot(instanceFolderName), "wineprefix");
+        var winePrefixPath = string.IsNullOrWhiteSpace(config.LinuxWinePrefixPath)
+            ? Path.Combine(OrionPaths.InstanceRoot(instanceFolderName), "wineprefix")
+            : config.LinuxWinePrefixPath!;
         await _fileSystem.EnsureDirectoryAsync(winePrefixPath, cancellationToken).ConfigureAwait(false);
         await _fileSystem.EnsureDirectoryAsync(Path.Combine(winePrefixPath, "dosdevices"), cancellationToken)
             .ConfigureAwait(false);
 
         if (OperatingSystem.IsLinux())
         {
-            Report("Game Input API (Wine; recomendado 26.x GDK no Linux)", 0.865);
+            report("Game Input API (Wine; recommended for 26.x GDK on Linux)", 0.865);
             await TryInstallGameInputRedistOnLinuxAsync(
                     OrionPaths.InstanceGame(instanceFolderName),
                     winePrefixPath,
@@ -238,7 +335,7 @@ public sealed class InstallationService : IInstallationService
                 .ConfigureAwait(false);
         }
 
-        Report("HTTPS / multijogador: cacert + Xcurl (layout mcbe-on-linux)", 0.875);
+        report("HTTPS / multiplayer: cacert + Xcurl (mcbe-on-linux layout)", 0.875);
         await _bedrockOnlineBootstrap
             .EnsureOnlineSupportFilesAsync(
                 OrionPaths.InstanceGame(instanceFolderName),
@@ -247,26 +344,65 @@ public sealed class InstallationService : IInstallationService
                 cancellationToken)
             .ConfigureAwait(false);
 
+        config.BedrockVersionUuid = string.IsNullOrWhiteSpace(entry.Uuid) ? null : entry.Uuid;
+        config.Version = entry.DropdownLabel;
         config.BedrockWindowsExecutablePath = exe;
         config.LinuxWinePrefixPath = winePrefixPath;
         await _instanceService.SaveConfigAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
 
-        if (modsEnabled)
+        return exe;
+    }
+
+    private async Task RedeployEnabledModsToGameFolderAsync(
+        string instanceFolderName,
+        InstanceConfig config,
+        CancellationToken cancellationToken)
+    {
+        if (!config.ModsEnabled || config.Mods.Count == 0)
         {
-            _eventBus.Publish(new InstallationExtrasStep("Mods enabled: extra hooks remain mock."));
-            await Task.Delay(150, cancellationToken).ConfigureAwait(false);
+            return;
         }
 
-        if (installLeviLamina && !string.IsNullOrWhiteSpace(config.LeviLaminaVersion))
+        await Task.Run(
+            () =>
+            {
+                foreach (var mod in config.Mods.Where(static m => m.Enabled))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var instanceModsRoot = OrionPaths.InstanceMods(instanceFolderName);
+                    var gameModsRoot = Path.Combine(OrionPaths.InstanceGame(instanceFolderName), "mods");
+                    var source = Path.Combine(instanceModsRoot, mod.GlobalFolderName);
+                    var target = Path.Combine(gameModsRoot, mod.GlobalFolderName);
+                    if (!Directory.Exists(source))
+                    {
+                        continue;
+                    }
+
+                    if (Directory.Exists(target))
+                    {
+                        Directory.Delete(target, recursive: true);
+                    }
+
+                    Directory.CreateDirectory(gameModsRoot);
+                    CopyDirectoryRecursive(source, target);
+                }
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void CopyDirectoryRecursive(string sourceDir, string destDir)
+    {
+        Directory.CreateDirectory(destDir);
+        foreach (var file in Directory.EnumerateFiles(sourceDir))
         {
-            Report("Installing LeviLamina via LIP", 0.94);
-            await InstallLeviLaminaAsync(instanceFolderName, config, cancellationToken).ConfigureAwait(false);
-            Report("LeviLamina installed and verified", 0.98);
+            File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), overwrite: true);
         }
 
-        Report("Done", 1);
-        _eventBus.Publish(new InstancesChanged());
-        _logger.LogInformation("Instance {Folder} installed ({Version}, exe={Exe})", instanceFolderName, gameVersion, exe);
+        foreach (var dir in Directory.EnumerateDirectories(sourceDir))
+        {
+            var sub = Path.Combine(destDir, Path.GetFileName(dir));
+            CopyDirectoryRecursive(dir, sub);
+        }
     }
 
     private async Task EnsureMsixvcPresentAsync(
@@ -824,24 +960,24 @@ public sealed class InstallationService : IInstallationService
     {
         if (string.IsNullOrWhiteSpace(config.LinuxUmuRunPath) || !File.Exists(config.LinuxUmuRunPath))
         {
-            UiLog("GameInput MSI: ignorado (umu-run indisponível).");
+            UiLog("GameInput MSI: skipped (umu-run not available).");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(config.LinuxProtonPath) || !Directory.Exists(config.LinuxProtonPath))
         {
-            UiLog("GameInput MSI: ignorado (GDK Proton não configurado).");
+            UiLog("GameInput MSI: skipped (GDK Proton not configured).");
             return;
         }
 
         var msi = FindGameInputRedistMsi(gameDir);
         if (msi is null)
         {
-            UiLog("GameInputRedist.msi não encontrado no pacote (normal em versões mais antigas).");
+            UiLog("GameInputRedist.msi not found in package (expected on older game versions).");
             return;
         }
 
-        UiLog($"Instalando GameInputRedist no prefixo Wine (26.x GDK): {msi}");
+        UiLog($"Installing GameInputRedist into Wine prefix (26.x GDK): {msi}");
         var wineMsi = ToWineWindowsPath(msi);
         var env = new Dictionary<string, string?>
         {
@@ -864,17 +1000,17 @@ public sealed class InstallationService : IInstallationService
             {
                 _logger.LogWarning("GameInputRedist.msi msiexec exit code {Code}", exit);
                 UiLog(
-                    $"Aviso: GameInput MSI terminou com código {exit}. Se o jogo não abrir, instale manualmente no prefixo Wine.");
+                    $"Warning: GameInput MSI finished with exit code {exit}. If the game does not start, install manually into the Wine prefix.");
             }
             else
             {
-                UiLog("GameInputRedist instalado no prefixo Wine.");
+                UiLog("GameInputRedist installed into Wine prefix.");
             }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "GameInputRedist MSI installation failed.");
-            UiLog($"Aviso: falha ao instalar GameInput MSI: {ex.Message}");
+            UiLog($"Warning: failed to install GameInput MSI: {ex.Message}");
         }
     }
 

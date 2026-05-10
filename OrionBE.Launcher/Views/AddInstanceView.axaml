@@ -63,26 +63,9 @@
                                Foreground="{DynamicResource OreMutedBrush}"/>
                 </Border>
 
-                <Border Background="{DynamicResource OreSurfaceBrush}"
-                        CornerRadius="10"
-                        Padding="12">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Temporary Linux Compatibility (Experimental)"
-                                   FontWeight="SemiBold"/>
-                        <TextBlock Text="Temporary per-instance workarounds for GNOME/Zorin minimize/workspace issues. If user reports confirm improvements, these options will be promoted to native defaults in a future release."
-                                   TextWrapping="Wrap"
-                                   Foreground="{DynamicResource OreMutedBrush}"/>
-                        <ToggleSwitch IsChecked="{Binding EnableGnomeCompatibilityProfile}"
-                                      OnContent="Enable GNOME Compatibility profile (temporary)"
-                                      OffContent="GNOME Compatibility profile off"/>
-                        <ToggleSwitch IsChecked="{Binding UseX11Fallback}"
-                                      OnContent="Use X11 fallback on launch (temporary)"
-                                      OffContent="Use default display backend"/>
-                        <ToggleSwitch IsChecked="{Binding CollectLaunchDiagnostics}"
-                                      OnContent="Collect launch diagnostics log for issue reports"
-                                      OffContent="Do not collect launch diagnostics"/>
-                    </StackPanel>
-                </Border>
+                <ToggleSwitch IsChecked="{Binding KeepWindowOpenAfterSuccessfulInstall}"
+                              OnContent="Keep window open when installation succeeds (review logs)"
+                              OffContent="Return home when installation succeeds"/>
 
                 <StackPanel Spacing="8" IsVisible="{Binding IsInstalling}">
                     <TextBlock Text="{Binding InstallStatus}" Foreground="{DynamicResource OreMutedBrush}"/>

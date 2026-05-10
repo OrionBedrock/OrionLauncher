@@ -39,6 +39,14 @@ public sealed partial class HomeViewModel : ViewModelBase
         var list = await _instanceService.ListInstancesAsync().ConfigureAwait(false);
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
+            foreach (var vm in Instances.ToList())
+            {
+                if (vm is IDisposable d)
+                {
+                    d.Dispose();
+                }
+            }
+
             Instances.Clear();
             foreach (var item in list.OrderBy(static i => i.Config.Name, StringComparer.OrdinalIgnoreCase))
             {

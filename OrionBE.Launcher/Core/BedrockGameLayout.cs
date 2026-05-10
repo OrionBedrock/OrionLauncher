@@ -3,8 +3,8 @@ namespace OrionBE.Launcher.Core;
 public static class BedrockGameLayout
 {
     /// <summary>
-    /// Versões recentes podem conter mais de um <c>Minecraft.Windows.exe</c> (ex.: cópias antigas / staging).
-    /// O executável correto para GDK costuma ser <c>…/Content/Minecraft.Windows.exe</c>.
+    /// Recent builds may ship more than one <c>Minecraft.Windows.exe</c> (e.g. legacy copies / staging).
+    /// The GDK executable is usually <c>…/Content/Minecraft.Windows.exe</c>.
     /// </summary>
     public static string? FindWindowsExecutable(string gameRoot)
     {
@@ -46,7 +46,7 @@ public static class BedrockGameLayout
         }
     }
 
-    /// <summary>Escolha determinística quando há vários candidatos (testável).</summary>
+    /// <summary>Deterministic choice when multiple candidates exist (testable).</summary>
     public static string PickBestMinecraftExeCandidate(IReadOnlyList<string> absolutePaths)
     {
         if (absolutePaths.Count == 0)

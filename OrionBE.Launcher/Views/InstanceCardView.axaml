@@ -27,7 +27,6 @@
             <DockPanel Grid.Row="2" LastChildFill="True">
                 <Button DockPanel.Dock="Right"
                         Command="{Binding OpenSettingsCommand}"
-                        IsEnabled="{Binding IsLaunchControlsEnabled}"
                         Padding="8"
                         Background="#22000000"
                         ToolTip.Tip="Settings">
@@ -37,7 +36,7 @@
                 </Button>
 
                 <Button Command="{Binding PlayCommand}"
-                        IsEnabled="{Binding IsLaunchControlsEnabled}"
+                        IsEnabled="{Binding IsPlayEnabled}"
                         HorizontalAlignment="Stretch"
                         Padding="10,8"
                         Background="{DynamicResource OreAccentBrush}"

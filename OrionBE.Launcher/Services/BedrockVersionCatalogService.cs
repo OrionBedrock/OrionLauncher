@@ -78,6 +78,39 @@ public sealed class BedrockVersionCatalogService : IBedrockVersionCatalogService
             || string.Equals(e.Version, key, StringComparison.OrdinalIgnoreCase));
     }
 
+    public async Task<BedrockVersionEntry?> TryGetLatestUpgradeInSameChannelAsync(
+        string currentVersionLabel,
+        CancellationToken cancellationToken = default)
+    {
+        var current = await TryResolveAsync(currentVersionLabel, cancellationToken).ConfigureAwait(false);
+        if (current is null)
+        {
+            return null;
+        }
+
+        var catalog = await GetCatalogAsync(cancellationToken).ConfigureAwait(false);
+        BedrockVersionEntry? best = null;
+        foreach (var candidate in catalog)
+        {
+            if (!string.Equals(candidate.Type, current.Type, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (BedrockVersionOrdering.CompareAscending(candidate.Version, current.Version) <= 0)
+            {
+                continue;
+            }
+
+            if (best is null || BedrockVersionOrdering.CompareAscending(best.Version, candidate.Version) < 0)
+            {
+                best = candidate;
+            }
+        }
+
+        return best;
+    }
+
     private async Task<(DateTime LastUpdatedUtc, IReadOnlyList<BedrockVersionEntry> Entries)?> TryLoadCacheFileAsync(
         CancellationToken cancellationToken)
     {

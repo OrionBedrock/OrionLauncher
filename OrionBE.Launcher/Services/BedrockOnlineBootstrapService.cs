@@ -9,10 +9,10 @@ public sealed class BedrockOnlineBootstrapService : IBedrockOnlineBootstrapServi
 {
     private const string CaCertDownloadUrl = "https://curl.se/ca/cacert.pem";
 
-    /// <summary>Binários Windows são listados aqui (a release "latest" no GitHub costuma ter só fontes).</summary>
+    /// <summary>Windows binaries are listed here (GitHub "latest" releases often ship sources only).</summary>
     private const string CurlSeWindowsPageUrl = "https://curl.se/windows/";
 
-    /// <summary>Último recurso se HTML/GitHub falharem — atualizar quando o pacote sumir do servidor.</summary>
+    /// <summary>Last resort if HTML/GitHub resolution fails — update if this bundle disappears upstream.</summary>
     private const string FallbackWin64MingwZipUrl =
         "https://curl.se/windows/dl-8.20.0_2/curl-8.20.0_2-win64-mingw.zip";
 
@@ -64,14 +64,14 @@ public sealed class BedrockOnlineBootstrapService : IBedrockOnlineBootstrapServi
 
         if (!File.Exists(cachedPem) || new FileInfo(cachedPem).Length < 100)
         {
-            logLine?.Invoke("Baixando cacert.pem (curl.se)…");
+            logLine?.Invoke("Downloading cacert.pem (curl.se)…");
             await _downloadService
                 .DownloadToFileAsync(new Uri(CaCertDownloadUrl), cachedPem, null, cancellationToken)
                 .ConfigureAwait(false);
         }
         else
         {
-            logLine?.Invoke("Reutilizando cacert.pem em cache.");
+            logLine?.Invoke("Reusing cached cacert.pem.");
         }
 
         var dest = Path.Combine(certsDir, "ca-bundle.crt");
@@ -81,11 +81,11 @@ public sealed class BedrockOnlineBootstrapService : IBedrockOnlineBootstrapServi
 
     private async Task EnsureXcurlAsync(string contentDir, Action<string>? logLine, CancellationToken cancellationToken)
     {
-        // Nome histórico: conteúdo pode ser libcurl-4.dll (MSYS2) ou libcurl-x64.dll (curl-for-win).
+        // Cached filename is historical; payload may be libcurl-4.dll (MSYS2) or libcurl-x64.dll (curl-for-win).
         var cachedDll = Path.Combine(OrionPaths.BedrockOnlineSupportCacheDir, "libcurl-4.dll");
         if (!File.Exists(cachedDll) || new FileInfo(cachedDll).Length < 4096)
         {
-            logLine?.Invoke("Obtendo libcurl-4.dll (pacote oficial curl win64-mingw)…");
+            logLine?.Invoke("Fetching libcurl from official curl win64-mingw package…");
             await _fileSystem.EnsureDirectoryAsync(OrionPaths.BedrockOnlineSupportCacheDir, cancellationToken).ConfigureAwait(false);
 
             var zipUrl = await ResolveWin64MingwZipUrlAsync(logLine, cancellationToken).ConfigureAwait(false);
@@ -106,10 +106,10 @@ public sealed class BedrockOnlineBootstrapService : IBedrockOnlineBootstrapServi
         }
         else
         {
-            logLine?.Invoke("Reutilizando DLL libcurl em cache (libcurl-4 ou libcurl-x64).");
+            logLine?.Invoke("Reusing cached libcurl DLL (libcurl-4 or libcurl-x64).");
         }
 
-        // Tutorial mcbe-on-linux: usar libcurl-4.dll do mingw no lugar de Xcurl.dll (mesmo conteúdo, nome exigido pelo jogo).
+        // mcbe-on-linux: ship mingw libcurl as Xcurl.dll (same payload; name required by the game).
         var destXcurl = Path.Combine(contentDir, "Xcurl.dll");
         await Task.Run(() => File.Copy(cachedDll, destXcurl, overwrite: true), cancellationToken).ConfigureAwait(false);
         logLine?.Invoke($"Xcurl.dll (libcurl): {destXcurl}");
@@ -124,7 +124,7 @@ public sealed class BedrockOnlineBootstrapService : IBedrockOnlineBootstrapServi
             return url;
         }
 
-        logLine?.Invoke("Página curl.se não retornou link; tentando releases no GitHub com binários…");
+        logLine?.Invoke("curl.se page did not yield a link; trying GitHub releases with binaries…");
         url = await TryResolveWin64MingwZipFromGitHubAsync(cancellationToken).ConfigureAwait(false);
         if (!string.IsNullOrWhiteSpace(url))
         {
@@ -133,7 +133,7 @@ public sealed class BedrockOnlineBootstrapService : IBedrockOnlineBootstrapServi
         }
 
         _logger.LogWarning("Using pinned fallback URL for curl win64-mingw zip.");
-        logLine?.Invoke($"Usando URL fixa de contingência: {FallbackWin64MingwZipUrl}");
+        logLine?.Invoke($"Using pinned fallback URL: {FallbackWin64MingwZipUrl}");
         return FallbackWin64MingwZipUrl;
     }
 
